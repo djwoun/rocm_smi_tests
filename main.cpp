@@ -7,10 +7,20 @@
 #include <sys/time.h>    // For gettimeofday()
 #include <pthread.h>     // For pthreads
 
-// Define matrix dimensions for GEMM.
-#define M_DIM 62768  // Number of rows of A and C
-#define K_DIM 62768  // Number of columns of A and rows of B
-#define N_DIM 62768  // Number of columns of B and C
+// Define matrix dimensions optimized for MI300 series with CDNA3 architecture
+// The MI300 has 228 Compute Units, so we want to keep them all busy
+// Matrix dimensions are chosen to utilize the Matrix Cores efficiently
+#define M_DIM 14592//21888//14592  // Match the number of stream processors
+#define K_DIM 16384//16384//12288  // Multiple of 4096 to utilize memory bandwidth efficiently
+#define N_DIM 14592//21888//14592  // Match the number of stream processors
+
+// Number of streams to use for concurrent execution
+// Using 8 streams to better utilize the 8192-bit memory interface
+#define NUM_STREAMS 8
+
+// Number of iterations to run in each stream
+// More iterations to keep the GPU saturated
+#define ITERATIONS_PER_STREAM 60
 
 // Global flag to signal the monitor thread to stop.
 volatile int stop_monitor = 0;
@@ -20,7 +30,6 @@ struct monitor_params {
     int EventSet;
     FILE *csvFile;
     struct timeval start_time;
-    // You can pass the event names if needed.
 };
 
 void *monitor_events(void *args) {
@@ -112,14 +121,24 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    /* Allocate host memory for matrices A, B, and C. */
+    /* Set HIP device properties to optimize for MI300 */
+    hipSetDevice(1);
+    hipDeviceProp_t deviceProp;
+    hipGetDeviceProperties(&deviceProp, 1);
+    printf("Device Name: %s\n", deviceProp.name);
+    printf("Compute Units: %d\n", deviceProp.multiProcessorCount);
+    printf("Max Threads Per Block: %d\n", deviceProp.maxThreadsPerBlock);
+    
+    /* Allocate host memory for matrices A, B, and C with page-locked memory for faster transfers */
     size_t size_A = ((size_t)M_DIM * K_DIM * sizeof(double));
     size_t size_B = ((size_t)K_DIM * N_DIM * sizeof(double));
     size_t size_C = ((size_t)M_DIM * N_DIM * sizeof(double));
 
-    double *h_A = (double*)malloc(size_A);
-    double *h_B = (double*)malloc(size_B);
-    double *h_C = (double*)malloc(size_C);
+    double *h_A, *h_B, *h_C;
+    hipHostMalloc(&h_A, size_A, hipHostMallocDefault);
+    hipHostMalloc(&h_B, size_B, hipHostMallocDefault);
+    hipHostMalloc(&h_C, size_C, hipHostMallocDefault);
+    
     if (!h_A || !h_B || !h_C) {
         fprintf(stderr, "Host memory allocation failed.\n");
         return -1;
@@ -137,58 +156,77 @@ int main(int argc, char *argv[]) {
     }
 
     /* Allocate device memory. */
-    double *d_A, *d_B, *d_C;
-    hipSetDevice(1);
-
+    double *d_A[NUM_STREAMS], *d_B[NUM_STREAMS], *d_C[NUM_STREAMS];
     hipError_t hipStatus;
-    hipStatus = hipMalloc((void**)&d_A, size_A);
-    if (hipStatus != hipSuccess) {
-        fprintf(stderr, "hipMalloc d_A failed.\n");
-        return -1;
-    }
-    hipStatus = hipMalloc((void**)&d_B, size_B);
-    if (hipStatus != hipSuccess) {
-        fprintf(stderr, "hipMalloc d_B failed.\n");
-        return -1;
-    }
-    hipStatus = hipMalloc((void**)&d_C, size_C);
-    if (hipStatus != hipSuccess) {
-        fprintf(stderr, "hipMalloc d_C failed.\n");
-        return -1;
-    }
-
-    /* Copy host matrices to device memory. */
-    hipStatus = hipMemcpy(d_A, h_A, size_A, hipMemcpyHostToDevice);
-    if (hipStatus != hipSuccess) {
-        fprintf(stderr, "hipMemcpy d_A failed.\n");
-        return -1;
-    }
-    hipStatus = hipMemcpy(d_B, h_B, size_B, hipMemcpyHostToDevice);
-    if (hipStatus != hipSuccess) {
-        fprintf(stderr, "hipMemcpy d_B failed.\n");
-        return -1;
-    }
-    hipStatus = hipMemcpy(d_C, h_C, size_C, hipMemcpyHostToDevice);
-    if (hipStatus != hipSuccess) {
-        fprintf(stderr, "hipMemcpy d_C failed.\n");
-        return -1;
+    
+    for (int s = 0; s < NUM_STREAMS; s++) {
+        hipStatus = hipMalloc((void**)&d_A[s], size_A);
+        if (hipStatus != hipSuccess) {
+            fprintf(stderr, "hipMalloc d_A[%d] failed.\n", s);
+            return -1;
+        }
+        hipStatus = hipMalloc((void**)&d_B[s], size_B);
+        if (hipStatus != hipSuccess) {
+            fprintf(stderr, "hipMalloc d_B[%d] failed.\n", s);
+            return -1;
+        }
+        hipStatus = hipMalloc((void**)&d_C[s], size_C);
+        if (hipStatus != hipSuccess) {
+            fprintf(stderr, "hipMalloc d_C[%d] failed.\n", s);
+            return -1;
+        }
     }
 
-    /* Create rocBLAS handle. */
-    rocblas_handle handle;
+    /* Create rocBLAS handles for each stream */
+    rocblas_handle handles[NUM_STREAMS];
     rocblas_status rb_status;
-    rb_status = rocblas_create_handle(&handle);
-    if (rb_status != rocblas_status_success) {
-        fprintf(stderr, "rocblas_create_handle failed.\n");
-        return -1;
+    
+    for (int s = 0; s < NUM_STREAMS; s++) {
+        rb_status = rocblas_create_handle(&handles[s]);
+        if (rb_status != rocblas_status_success) {
+            fprintf(stderr, "rocblas_create_handle failed for stream %d.\n", s);
+            return -1;
+        }
     }
 
-    /* Create a HIP event to detect GEMM completion. */
-    hipEvent_t gemmDone;
-    hipStatus = hipEventCreate(&gemmDone);
-    if (hipStatus != hipSuccess) {
-        fprintf(stderr, "hipEventCreate failed.\n");
-        return -1;
+    /* Create multiple streams for concurrent execution */
+    hipStream_t streams[NUM_STREAMS];
+    hipEvent_t events[NUM_STREAMS];
+    
+    for (int s = 0; s < NUM_STREAMS; s++) {
+        hipStatus = hipStreamCreateWithFlags(&streams[s], hipStreamNonBlocking);
+        if (hipStatus != hipSuccess) {
+            fprintf(stderr, "hipStreamCreate failed for stream %d.\n", s);
+            return -1;
+        }
+        
+        hipStatus = hipEventCreate(&events[s]);
+        if (hipStatus != hipSuccess) {
+            fprintf(stderr, "hipEventCreate failed for event %d.\n", s);
+            return -1;
+        }
+        
+        /* Associate rocBLAS handle with stream */
+        rocblas_set_stream(handles[s], streams[s]);
+    }
+
+    /* Copy host matrices to device memory in parallel across streams */
+    for (int s = 0; s < NUM_STREAMS; s++) {
+        hipStatus = hipMemcpyAsync(d_A[s], h_A, size_A, hipMemcpyHostToDevice, streams[s]);
+        if (hipStatus != hipSuccess) {
+            fprintf(stderr, "hipMemcpyAsync d_A[%d] failed.\n", s);
+            return -1;
+        }
+        hipStatus = hipMemcpyAsync(d_B[s], h_B, size_B, hipMemcpyHostToDevice, streams[s]);
+        if (hipStatus != hipSuccess) {
+            fprintf(stderr, "hipMemcpyAsync d_B[%d] failed.\n", s);
+            return -1;
+        }
+        hipStatus = hipMemcpyAsync(d_C[s], h_C, size_C, hipMemcpyHostToDevice, streams[s]);
+        if (hipStatus != hipSuccess) {
+            fprintf(stderr, "hipMemcpyAsync d_C[%d] failed.\n", s);
+            return -1;
+        }
     }
 
     /* Open CSV file for recording data and write header. */
@@ -220,40 +258,63 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    /* Launch GEMM operation asynchronously.
-       Compute: C = alpha * A * B + beta * C */
-    double alpha = 0.75;
-    double beta  = 0.5;
-    int iterations = 5; // Adjust as needed
-
-    for (int iter = 0; iter < iterations; iter++) {
-        rb_status = rocblas_dgemm(handle,
-                                  rocblas_operation_none, rocblas_operation_none,
-                                  M_DIM, N_DIM, K_DIM,
-                                  &alpha,
-                                  d_A, M_DIM,
-                                  d_B, K_DIM,
-                                  &beta,
-                                  d_C, M_DIM);
-        if (rb_status != rocblas_status_success) {
-            fprintf(stderr, "rocblas_dgemm failed on iteration %d.\n", iter);
-            return -1;
-        }
-        // Record the GEMM event.
-        hipEventRecord(gemmDone, 0);
-
-        // Instead of a loop here, the monitor thread is already recording every 0.5 sec.
-        hipEventSynchronize(gemmDone);
+    /* Wait for initial copies to complete */
+    for (int s = 0; s < NUM_STREAMS; s++) {
+        hipStreamSynchronize(streams[s]);
     }
 
-    hipEventSynchronize(gemmDone);
+    /* GEMM parameters */
+    double alpha = 0.75;
+    double beta  = 0.5;
+    
+    /* Create a kernel execution loop that keeps the GPU busy */
+    for (int iter = 0; iter < ITERATIONS_PER_STREAM; iter++) {
+        for (int s = 0; s < NUM_STREAMS; s++) {
+        
+        
+            
+        
+        //if (iter < ITERATIONS_PER_STREAM - 1) {
+            /* Prefetch next iteration's data while current is processing */
+        //    hipMemPrefetchAsync(d_A[s], size_A, 1, streams[(s + 1) % NUM_STREAMS]);
+        //    hipMemPrefetchAsync(d_B[s], size_B, 1, streams[(s + 1) % NUM_STREAMS]);
+        //}
+        
+        
+        
+            /* Launch GEMM operations asynchronously */
+            rb_status = rocblas_dgemm(handles[s],
+                                     rocblas_operation_none, rocblas_operation_none,
+                                     M_DIM, N_DIM, K_DIM,
+                                     &alpha,
+                                     d_A[s], M_DIM,
+                                     d_B[s], K_DIM,
+                                     &beta,
+                                     d_C[s], M_DIM);
+            
+            if (rb_status != rocblas_status_success) {
+                fprintf(stderr, "rocblas_dgemm failed on iteration %d, stream %d.\n", iter, s);
+                return -1;
+            }
+            
+            /* Record event but don't synchronize */
+            hipEventRecord(events[s], streams[s]);
+        }
+    }
+    
+    /* Wait for all streams to complete */
+    for (int s = 0; s < NUM_STREAMS; s++) {
+        hipStreamSynchronize(streams[s]);
+    }
 
-    /* Copy the result from device to host. */
-    hipStatus = hipMemcpy(h_C, d_C, size_C, hipMemcpyDeviceToHost);
+    /* Copy results back from one stream as we only need one copy */
+    hipStatus = hipMemcpyAsync(h_C, d_C[0], size_C, hipMemcpyDeviceToHost, streams[0]);
     if (hipStatus != hipSuccess) {
         fprintf(stderr, "hipMemcpy h_C failed.\n");
         return -1;
     }
+    
+    hipStreamSynchronize(streams[0]);
 
     /* Signal the monitor thread to stop and wait for it to finish. */
     stop_monitor = 1;
@@ -261,14 +322,19 @@ int main(int argc, char *argv[]) {
 
     /* Cleanup resources. */
     fclose(csvFile);
-    hipEventDestroy(gemmDone);
-    rocblas_destroy_handle(handle);
-    free(h_A);
-    free(h_B);
-    free(h_C);
-    hipFree(d_A);
-    hipFree(d_B);
-    hipFree(d_C);
+    
+    for (int s = 0; s < NUM_STREAMS; s++) {
+        hipEventDestroy(events[s]);
+        hipStreamDestroy(streams[s]);
+        rocblas_destroy_handle(handles[s]);
+        hipFree(d_A[s]);
+        hipFree(d_B[s]);
+        hipFree(d_C[s]);
+    }
+    
+    hipHostFree(h_A);
+    hipHostFree(h_B);
+    hipHostFree(h_C);
 
     statusFlag = PAPI_stop(EventSet, NULL);
     if (statusFlag != PAPI_OK) {
@@ -286,6 +352,6 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "PAPI destroy eventset: %s\n", PAPI_strerror(statusFlag));
         return -1;
     }
-
+ 
     return 0;
 }
