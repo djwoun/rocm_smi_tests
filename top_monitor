@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+echo "Starting system monitoring..."
+echo "Will alert if any users besides dwoun and root have processes with CPU > 0.1% AND MEM > 0.1%"
+echo "Monitoring top 300 processes only"
+echo "Press Ctrl+C to exit"
+echo "-----------------------------------------"
+
+# Function to check processes and alert
+check_processes() {
+    local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+    # Run top in batch mode, get one iteration, limit to 300 processes
+    top_output=$(top -b -n 1 -o %CPU -c | head -n 37)
+    
+    # Skip the header lines and process each line
+    echo "$top_output" | tail -n +8 | while read -r line; do
+        # Extract relevant fields
+        pid=$(echo "$line" | awk '{print $1}')
+        user=$(echo "$line" | awk '{print $2}')
+        cpu=$(echo "$line" | awk '{print $9}')
+        mem=$(echo "$line" | awk '{print $10}')
+        
+        # Convert to numeric values for comparison
+        cpu_check=$(echo "$cpu > 0.1" | awk '{print ($1 > $3)}')
+        mem_check=$(echo "$mem > 0.1" | awk '{print ($1 > $3)}')
+        
+        # Check if user is not dwoun or root AND both CPU and MEM exceed threshold
+        if [[ "$user" != "dwoun" && "$user" != "root" ]]; then
+            if [[ "$cpu_check" -eq 1 && "$mem_check" -eq 1 ]]; then
+                cmd=$(echo "$line" | awk '{for(i=12;i<=NF;i++) printf "%s ",$i; print ""}' | sed 's/^ *//;s/ *$//')
+                if [[ -z "$cmd" ]]; then
+                    cmd=$(ps -p $pid -o comm=)
+                fi
+                echo -e "${RED}[$timestamp] ALERT: User ${YELLOW}$user${NC} is running ${GREEN}$cmd${NC} (PID $pid) with CPU: ${RED}$cpu%${NC} and MEM: ${RED}$mem%${NC}"
+            fi
+        fi
+    done
+}
+
+# Main monitoring loop with more precise timing
+while true; do
+    start_time=$(date +%s)
+    
+    echo "Checking processes at $(date +"%H:%M:%S")"
+    check_processes
+    echo "-----------------------------------------"
+    
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+    
+    # If checking took less than 5 seconds, sleep for the remainder
+    # Otherwise proceed immediately to the next check
+    
+    sleep 5 
+    
+done
