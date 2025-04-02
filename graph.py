@@ -2,14 +2,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Adjust the file name if needed.
-csv_file = 'papi_measurements.csv'
+csv_file = '20.csv'
 
 # Read the CSV file.
 df = pd.read_csv(csv_file)
 
 # Define your device and sensor variables.
 device_id = 1
-sensor_id = 2
+sensor_id = 1
 
 # Construct the column names using the variables.
 temperature_column = f'rocm_smi:::temp_current:device={device_id}:sensor={sensor_id}'
@@ -17,7 +17,7 @@ memory_busy_percent_column = f'rocm_smi:::memory_busy_percent:device={device_id}
 busy_percent_column = f'rocm_smi:::busy_percent:device={device_id}'
 
 # Create the figure and the left y-axis (for Temperature)
-fig, ax1 = plt.subplots(figsize=(10, 6))
+fig, ax1 = plt.subplots(figsize=(90, 6))
 l1, = ax1.plot(df['timestamp'],
                df[temperature_column],
                color='tab:red', label='Temperature')
