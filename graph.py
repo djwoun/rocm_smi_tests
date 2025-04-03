@@ -59,6 +59,7 @@ ax2.set_yticks([0, 20, 40, 60, 80, 100])  # adjust if needed
 
 # Optional: Set custom ticks for the left y-axis as well.
 ax1.set_yticks(range(0, 96, 5))
+ax1.xaxis.grid(True, linestyle='--', linewidth=0.5)
 
 # Create a combined legend for all lines.
 lines = [l1, l2, l3]
