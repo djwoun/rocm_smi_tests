@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 # Adjust the file name if needed.
-csv_file = '20.csv'
+csv_file = 'data/dopamine_trig_20_0.csv'
 
 # Read the CSV file.
 df = pd.read_csv(csv_file)
@@ -12,8 +12,8 @@ df = pd.read_csv(csv_file)
 df['time_s'] = df['timestamp'] - df['timestamp'].iloc[0]
 
 # Define your device and sensor variables.
-device_id = 1
-sensor_id = 1
+device_id = 0
+sensor_id = 2
 
 temp = ["Edge", "Junction", "Memory"]
 temperature_column = f'rocm_smi:::temp_current:device={device_id}:sensor={sensor_id}'
@@ -39,7 +39,7 @@ ax1.yaxis.grid(True, linestyle='--', linewidth=0.5)
 
 # Improve the x-axis tick placement to show more detail.
 # Increase the number of major ticks so we can better see each iteration.
-ax1.set_xticks(range(0, 1000, 5))
+ax1.set_xticks(range(0, 3600, 20))
 
 
 # Create the right y-axis for Busy Percent and Memory Busy Percent.
@@ -55,10 +55,10 @@ l3, = ax2.plot(df['time_s'],
 
 ax2.set_ylabel('Memory and Sub-Block Busy Percent (%)', color='black')
 ax2.tick_params(axis='y', labelcolor='black')
-ax2.set_yticks([0, 20, 40, 60, 80, 100])  # adjust if needed
+ax2.set_yticks(range(0, 101, 5))  # adjust if needed
 
 # Optional: Set custom ticks for the left y-axis as well.
-ax1.set_yticks(range(0, 96, 5))
+ax1.set_yticks(range(0, 101, 5))
 ax1.xaxis.grid(True, linestyle='--', linewidth=0.5)
 
 # Create a combined legend for all lines.
