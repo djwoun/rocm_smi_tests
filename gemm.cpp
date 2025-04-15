@@ -9,14 +9,14 @@
 
 // Define matrix dimensions optimized for MI300 series with CDNA3 architecture
 #define M_DIM 14592  // Match the number of stream processors
-#define K_DIM 4096   // Multiple of 4096 to utilize memory bandwidth efficiently
+#define K_DIM 65536   // Multiple of 4096 to utilize memory bandwidth efficiently
 #define N_DIM 14592  // Match the number of stream processors
 
 // Number of streams to use for concurrent execution
 #define NUM_STREAMS 1
 
 // Number of iterations to run in each stream
-#define ITERATIONS_PER_STREAM 10000
+#define ITERATIONS_PER_STREAM 20
 
 // Global flag to signal the monitor thread to stop.
 volatile int stop_monitor = 0;
@@ -47,24 +47,71 @@ void *monitor_events(void *args) {
         double elapsed = (current_time.tv_sec - params->start_time.tv_sec) +
                          (current_time.tv_usec - params->start_time.tv_usec) / 1e6;
 
-        // Write the measurements to the CSV file.
-        fprintf(params->csvFile, "%.6f,%lld,%lld,%lld,%lld,%lld\n",
-                elapsed, values[0], values[1], values[2], values[3], values[4]);
+
+        int gpu1_power = -1; // Default to -1 (error/unavailable)
+        FILE *fp = popen("amd-smi metric -g 1 -p --csv", "r"); // Use specific command
+        if (fp != NULL) {
+            char buffer[128]; // Sufficient buffer for the expected output
+            int header_skipped = 0;
+            int data_parsed = 0;
+
+            while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+                // Skip the header line (contains "gpu")
+                if (!header_skipped && strstr(buffer, "gpu")) {
+                    header_skipped = 1;
+                    continue;
+                }
+                // Parse the data line (after header)
+                if (header_skipped) {
+                    int gpu_id_read;
+                    // Expect format like "1,83,..." - parse first two ints
+                    if (sscanf(buffer, "%d,%d", &gpu_id_read, &gpu1_power) == 2) {
+                        data_parsed = 1; // Flag success
+                        break;          // Got the data, no need to read further
+                    } else {
+                        // Failed to parse data line, treat as error for this sample
+                        gpu1_power = -1;
+                        break;
+                    }
+                }
+            }
+
+            // Check if data was actually parsed after skipping header
+            if (header_skipped && !data_parsed) {
+                gpu1_power = -1; // Header found, but data parsing failed/missing
+            } else if (!header_skipped) {
+                 gpu1_power = -1; // Header wasn't even found
+            }
+
+
+            int status = pclose(fp);
+            // If command failed execution, ensure power is marked as error
+            if (status == -1 || (WIFEXITED(status) && WEXITSTATUS(status) != 0)) {
+                 if (gpu1_power != -1) { // Only print warning if we previously thought we succeeded
+                      // Optional: fprintf(stderr, "Warning: amd-smi command failed, but power value was parsed earlier.\n");
+                 }
+                 gpu1_power = -1;
+            }
+        } else {
+             perror("Failed to run amd-smi"); // popen failed itself
+             // gpu1_power remains -1
+        }
+
+        // Write the PAPI values and the GPU 1 power value to the CSV file.
+        fprintf(params->csvFile, "%.6f,%lld,%lld,%lld,%lld,%lld,%d\n",
+                elapsed, values[0], values[1], values[2], values[3], values[4], gpu1_power);
         fflush(params->csvFile);
 
         // Also print to stdout.
         fprintf(stdout,
-                "Time: %.6f sec -> rocm_smi:::temp_current:device=1:sensor=1: %lld, "
-                "rocm_smi:::temp_current:device=1:sensor=2: %lld, "
-                "rocm_smi:::mem_usage_VRAM:device=1: %lld, "
-                "rocm_smi:::busy_percent:device=1: %lld, "
-                "rocm_smi:::memory_busy_percent:device=1: %lld\n",
-                elapsed, values[0], values[1], values[2], values[3], values[4]);
+                "Time: %.6f sec -> event1: %lld, event2: %lld, event3: %lld, event4: %lld, event5: %lld, GPU1_POWER: %d\n",
+                elapsed, values[0], values[1], values[2], values[3], values[4], gpu1_power);
 
-        usleep(500000);  // Sleep for 0.5 seconds.
+        usleep(300000);  // Sleep for 0.5 seconds.
     }
-    return NULL;
+    return NULL; 
 }
+
 
 // Custom DGEMM kernel using a simple row-major implementation.
 __global__ void dgemm_kernel(const double *A, const double *B, double *C,
@@ -78,6 +125,8 @@ __global__ void dgemm_kernel(const double *A, const double *B, double *C,
         // Compute the dot product of row of A and column of B.
         for (int k = 0; k < K; k++) {
             sum += A[row * K + k] * B[k * N + col];
+            //sum += sin(A[row * K + k] * B[k * N + col]) + cos(A[row * K + k] * B[k * N + col]);
+            
         }
         // Scale the result and add the scaled C element.
         C[row * N + col] = alpha * sum + beta * C[row * N + col];
@@ -234,8 +283,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to open CSV file for writing.\n");
         return -1;
     }
-    fprintf(csvFile, "timestamp,%s,%s,%s,%s,%s\n",
-            event1, event2, event3, event4, event5);
+    fprintf(csvFile, "timestamp,%s,%s,%s,%s,%s,%s\n",
+        event1, event2, event3, event4, event5, "power");
 
     /* Start PAPI counters to monitor GPU metrics. */
     statusFlag = PAPI_start(EventSet);
@@ -267,9 +316,9 @@ int main(int argc, char *argv[]) {
     double beta  = 0.5;
     
     // Define grid and block dimensions for the kernel launch.
-    dim3 blockDim(16, 16);
-    dim3 gridDim((N_DIM + blockDim.x - 1) / blockDim.x,
-                 (M_DIM + blockDim.y - 1) / blockDim.y);
+    dim3 blockDim(32, 32);
+    dim3 gridDim((N_DIM + blockDim.x - 1) / (blockDim.x),
+                 (M_DIM + blockDim.y - 1) / (blockDim.y));
 
     /* Kernel execution loop to keep the GPU busy */
     for (int iter = 0; iter < ITERATIONS_PER_STREAM; iter++) {
@@ -281,20 +330,25 @@ int main(int argc, char *argv[]) {
 
             // Record event but don't synchronize.
             hipEventRecord(events[s], streams[s]);
+            
+            hipStreamSynchronize(streams[s]);
+            usleep(3000000);
         }
     }
     
     /* Wait for all streams to complete */
-    for (int s = 0; s < NUM_STREAMS; s++) {
-        hipStreamSynchronize(streams[s]);
-    }
+    /*for (int s = 0; s < NUM_STREAMS; s++) {
+        
+    }*/
 
-    /* Copy results back from one stream as we only need one copy */
+    //usleep(3000000);
+    
+    /*
     hipStatus = hipMemcpyAsync(h_C, d_C[0], size_C, hipMemcpyDeviceToHost, streams[0]);
     if (hipStatus != hipSuccess) {
         fprintf(stderr, "hipMemcpy h_C failed.\n");
         return -1;
-    }
+    }*/
     
     hipStreamSynchronize(streams[0]);
 
