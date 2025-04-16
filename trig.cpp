@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     // Write CSV header: timestamp and the four events.
-    fprintf(csvFile, "timestamp,%s,%s,%s,%s\n", event1, event2, event3, event4);
+    fprintf(csvFile, "timestamp,%s,%s,%s,%s,%s\n", event1, event2, event3, event4, "power");
 
     /* Start PAPI counters to monitor GPU metrics. */
     statusFlag = PAPI_start(EventSet);
@@ -164,15 +164,65 @@ int main(int argc, char *argv[]) {
         gettimeofday(&current_time, NULL);
         double elapsed = (current_time.tv_sec - start_time.tv_sec) +
                          (current_time.tv_usec - start_time.tv_usec) / 1e6;
+                         
+                         
+        int gpu1_power = -1; // Default to -1 (error/unavailable)
+        FILE *fp = popen("amd-smi metric -g 1 -p --csv", "r"); // Use specific command
+        if (fp != NULL) {
+            char buffer[128]; // Sufficient buffer for the expected output
+            int header_skipped = 0;
+            int data_parsed = 0;
+
+            while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+                // Skip the header line (contains "gpu")
+                if (!header_skipped && strstr(buffer, "gpu")) {
+                    header_skipped = 1;
+                    continue;
+                }
+                // Parse the data line (after header)
+                if (header_skipped) {
+                    int gpu_id_read;
+                    // Expect format like "1,83,..." - parse first two ints
+                    if (sscanf(buffer, "%d,%d", &gpu_id_read, &gpu1_power) == 2) {
+                        data_parsed = 1; // Flag success
+                        break;          // Got the data, no need to read further
+                    } else {
+                        // Failed to parse data line, treat as error for this sample
+                        gpu1_power = -1;
+                        break;
+                    }
+                }
+            }
+
+            // Check if data was actually parsed after skipping header
+            if (header_skipped && !data_parsed) {
+                gpu1_power = -1; // Header found, but data parsing failed/missing
+            } else if (!header_skipped) {
+                 gpu1_power = -1; // Header wasn't even found
+            }
+
+
+            int status = pclose(fp);
+            // If command failed execution, ensure power is marked as error
+            if (status == -1 || (WIFEXITED(status) && WEXITSTATUS(status) != 0)) {
+                 if (gpu1_power != -1) { // Only print warning if we previously thought we succeeded
+                      // Optional: fprintf(stderr, "Warning: amd-smi command failed, but power value was parsed earlier.\n");
+                 }
+                 gpu1_power = -1;
+            }
+        } else {
+             perror("Failed to run amd-smi"); // popen failed itself
+             // gpu1_power remains -1
+        }
 
         // Write measurements to the CSV file.
-        fprintf(csvFile, "%.6f,%lld,%lld,%lld,%lld\n", elapsed, values[0], values[1], values[2], values[3]);
+        fprintf(csvFile, "%.6f,%lld,%lld,%lld,%lld,%lld\n", elapsed, values[0], values[1], values[2], values[3],gpu1_power);
 
         // Optionally print to stdout.
-        fprintf(stdout, "Time: %.6f sec -> %s: %lld, %s: %lld, %s: %lld, %s: %lld\n",
-                elapsed, event1, values[0], event2, values[1], event3, values[2], event4, values[3]);
+        fprintf(stdout, "Time: %.6f sec -> %s: %lld, %s: %lld, %s: %lld, %s: %lld %s: %lld\n",
+                elapsed, event1, values[0], event2, values[1], event3, values[2], event4, values[3], "power" , gpu1_power);
         fflush(stdout);
-        usleep(500000);  // Sleep for 500 milliseconds.
+        usleep(300000);  // Sleep for 500 milliseconds.
     }
 
     /* Wait for the kernel to complete. */
