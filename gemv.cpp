@@ -7,8 +7,8 @@
 #include <pthread.h>     // For pthreads
 
 // Define dimensions for DGEMV
-#define M_DIM 58368  // Number of rows in matrix A and length of result vector y
-#define K_DIM 58368   // Number of columns in matrix A and length of vector x
+#define M_DIM 29184  // Number of rows in matrix A and length of result vector y
+#define K_DIM 116736   // Number of columns in matrix A and length of vector x
 
 // Number of streams to use for concurrent execution
 #define NUM_STREAMS 1
@@ -67,16 +67,17 @@ void *monitor_events(void *args) {
 // Custom DGEMV kernel using a simple row-major implementation.
 // Computes: y[row] = alpha * dot(A[row][:], x) + beta * y[row]
 __global__ void dgemv_kernel(const double *A, const double *x, double *y,
-                             int M, int N, double alpha, double beta) {
-    int row = blockIdx.x * blockDim.x + threadIdx.x;
+                             size_t M, size_t N, double alpha, double beta) {
+    size_t row = blockIdx.x * blockDim.x + threadIdx.x;
     if (row < M) {
         double sum = 0.0;
-        for (int j = 0; j < N; j++) {
+        for (size_t j = 0; j < N; j++) {
             sum += A[row * N + j] * x[j];
         }
         y[row] = alpha * sum + beta * y[row];
     }
 }
+
 
 int main(int argc, char *argv[]) {
     int statusFlag;
@@ -275,13 +276,17 @@ int main(int argc, char *argv[]) {
 
             // Record event but don't synchronize.
             hipEventRecord(events[s], streams[s]);
+            
+            hipStreamSynchronize(streams[s]);
+            
+            usleep(5000000);
         }
     }
     
     /* Wait for all streams to complete */
-    for (int s = 0; s < NUM_STREAMS; s++) {
-        hipStreamSynchronize(streams[s]);
-    }
+    //for (int s = 0; s < NUM_STREAMS; s++) {
+    //    hipStreamSynchronize(streams[s]);
+    //}
 
     /* Copy results back from one stream as we only need one copy */
     hipStatus = hipMemcpyAsync(h_C, d_C[0], size_C, hipMemcpyDeviceToHost, streams[0]);
