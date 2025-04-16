@@ -7,10 +7,9 @@
 #include <sys/time.h>    // For gettimeofday()
 #include <pthread.h>     // For pthreads
 
-// Define matrix dimensions optimized for MI300 series with CDNA3 architecture
-#define M_DIM 14592  // Match the number of stream processors
-#define K_DIM 65536   // Multiple of 4096 to utilize memory bandwidth efficiently
-#define N_DIM 14592  // Match the number of stream processors
+#define M_DIM 14592  
+#define K_DIM 65536  
+#define N_DIM 14592  //14592
 
 // Number of streams to use for concurrent execution
 #define NUM_STREAMS 1
