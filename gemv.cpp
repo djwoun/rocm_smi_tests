@@ -7,14 +7,14 @@
 #include <pthread.h>     // For pthreads
 
 // Define dimensions for DGEMV
-#define M_DIM 29184  // Number of rows in matrix A and length of result vector y
+#define M_DIM 58368  // Number of rows in matrix A and length of result vector y
 #define K_DIM 116736   // Number of columns in matrix A and length of vector x
 
 // Number of streams to use for concurrent execution
 #define NUM_STREAMS 1
 
 // Number of iterations to run in each stream
-#define ITERATIONS_PER_STREAM 1
+#define ITERATIONS_PER_STREAM 20
 
 // Global flag to signal the monitor thread to stop.
 volatile int stop_monitor = 0;
@@ -263,9 +263,11 @@ int main(int argc, char *argv[]) {
     
     // Define grid and block dimensions for the GEMV kernel launch.
     // Here we use a 1D grid as the kernel computes a vector of length M_DIM.
-    int threadsPerBlock = 1024;
+    int threadsPerBlock = 128;
     int blocksPerGrid = (M_DIM + threadsPerBlock - 1) / threadsPerBlock;
-
+    
+    usleep(5000000);
+     
     /* Kernel execution loop to keep the GPU busy */
     for (int iter = 0; iter < ITERATIONS_PER_STREAM; iter++) {
         for (int s = 0; s < NUM_STREAMS; s++) {
