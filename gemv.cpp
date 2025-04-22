@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <papi.h>
+#include "papi.h"
 #include <hip/hip_runtime.h>
 #include <unistd.h>      // For usleep()
 #include <sys/time.h>    // For gettimeofday()
 #include <pthread.h>     // For pthreads
 
 // Define dimensions for DGEMV
-#define M_DIM 58368  // Number of rows in matrix A and length of result vector y
+#define M_DIM 87552  // Number of rows in matrix A and length of result vector y
 #define K_DIM 116736   // Number of columns in matrix A and length of vector x
 
 // Number of streams to use for concurrent execution
@@ -30,7 +30,7 @@ struct monitor_params {
 void *monitor_events(void *args) {
     struct monitor_params *params = (struct monitor_params *)args;
     int statusFlag;
-    long long values[5];
+    long long values[6];  // now monitoring 6 events (event0 through event5)
 
     // Continue monitoring until stop_monitor is set.
     while (!stop_monitor) {
@@ -46,18 +46,19 @@ void *monitor_events(void *args) {
                          (current_time.tv_usec - params->start_time.tv_usec) / 1e6;
 
         // Write the measurements to the CSV file.
-        fprintf(params->csvFile, "%.6f,%lld,%lld,%lld,%lld,%lld\n",
-                elapsed, values[0], values[1], values[2], values[3], values[4]);
+        fprintf(params->csvFile, "%.6f,%lld,%lld,%lld,%lld,%lld,%lld\n",
+                elapsed, values[0], values[1], values[2], values[3], values[4], values[5]);
         fflush(params->csvFile);
 
-        // Also print to stdout.
+        // Also print to stdout, including event0.
         fprintf(stdout,
-                "Time: %.6f sec -> rocm_smi:::temp_current:device=1:sensor=1: %lld, "
-                "rocm_smi:::temp_current:device=1:sensor=2: %lld, "
-                "rocm_smi:::mem_usage_VRAM:device=1: %lld, "
-                "rocm_smi:::busy_percent:device=1: %lld, "
-                "rocm_smi:::memory_busy_percent:device=1: %lld\n",
-                elapsed, values[0], values[1], values[2], values[3], values[4]);
+                "Time: %.6f sec -> event0: %lld, "
+                "rocm_smi:::temp_current:device=0:sensor=1: %lld, "
+                "rocm_smi:::temp_current:device=0:sensor=2: %lld, "
+                "rocm_smi:::mem_usage_VRAM:device=0: %lld, "
+                "rocm_smi:::busy_percent:device=0: %lld, "
+                "rocm_smi:::memory_busy_percent:device=0: %lld\n",
+                elapsed, values[0], values[1], values[2], values[3], values[4], values[5]);
 
         usleep(500000);  // Sleep for 0.5 seconds.
     }
@@ -78,7 +79,6 @@ __global__ void dgemv_kernel(const double *A, const double *x, double *y,
     }
 }
 
-
 int main(int argc, char *argv[]) {
     int statusFlag;
     int EventSet = PAPI_NULL;
@@ -97,13 +97,19 @@ int main(int argc, char *argv[]) {
         return -1;
     } 
 
-    /* Add GPU events to the event set. */
-    const char *event1 = "rocm_smi:::temp_current:device=1:sensor=1";
-    const char *event2 = "rocm_smi:::temp_current:device=1:sensor=2";
-    const char *event3 = "rocm_smi:::mem_usage_VRAM:device=1";
-    const char *event4 = "rocm_smi:::busy_percent:device=1";
-    const char *event5 = "rocm_smi:::memory_busy_percent:device=1";
+    /* Add GPU events to the event set (now including event0). */
+    const char *event0 = "rocm_smi:::gpu_clk_freq_System:device=0:idx=0";
+    const char *event1 = "rocm_smi:::temp_current:device=0:sensor=1";
+    const char *event2 = "rocm_smi:::temp_current:device=0:sensor=2";
+    const char *event3 = "rocm_smi:::mem_usage_VRAM:device=0";
+    const char *event4 = "rocm_smi:::busy_percent:device=0";
+    const char *event5 = "rocm_smi:::memory_busy_percent:device=0";
 
+    statusFlag = PAPI_add_named_event(EventSet, event0);
+    if (statusFlag != PAPI_OK) {
+        fprintf(stderr, "PAPI add named event 0: %s\n", PAPI_strerror(statusFlag));
+        return -1;
+    }
     statusFlag = PAPI_add_named_event(EventSet, event1);
     if (statusFlag != PAPI_OK) {
         fprintf(stderr, "PAPI add named event 1: %s\n", PAPI_strerror(statusFlag));
@@ -131,9 +137,9 @@ int main(int argc, char *argv[]) {
     }
 
     /* Set HIP device properties to optimize for MI300 */
-    hipSetDevice(1);
+    hipSetDevice(0);
     hipDeviceProp_t deviceProp;
-    hipGetDeviceProperties(&deviceProp, 1);
+    hipGetDeviceProperties(&deviceProp, 0);
     printf("Device Name: %s\n", deviceProp.name);
     printf("Compute Units: %d\n", deviceProp.multiProcessorCount);
     printf("Max Threads Per Block: %d\n", deviceProp.maxThreadsPerBlock);
@@ -229,8 +235,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to open CSV file for writing.\n");
         return -1;
     }
-    fprintf(csvFile, "timestamp,%s,%s,%s,%s,%s\n",
-            event1, event2, event3, event4, event5);
+    fprintf(csvFile, "timestamp,%s,%s,%s,%s,%s,%s\n",
+            event0, event1, event2, event3, event4, event5);
 
     /* Start PAPI counters to monitor GPU metrics. */
     statusFlag = PAPI_start(EventSet);
@@ -285,11 +291,6 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    /* Wait for all streams to complete */
-    //for (int s = 0; s < NUM_STREAMS; s++) {
-    //    hipStreamSynchronize(streams[s]);
-    //}
-
     /* Copy results back from one stream as we only need one copy */
     hipStatus = hipMemcpyAsync(h_C, d_C[0], size_C, hipMemcpyDeviceToHost, streams[0]);
     if (hipStatus != hipSuccess) {
@@ -297,6 +298,10 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     
+    /* Wait for all streams to complete */
+    //for (int s = 0; s < NUM_STREAMS; s++) {
+    //    hipStreamSynchronize(streams[s]);
+    //}
     hipStreamSynchronize(streams[0]);
 
     /* Signal the monitor thread to stop and wait for it to finish. */
