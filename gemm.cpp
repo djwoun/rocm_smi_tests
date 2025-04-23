@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <papi.h>
-#include <hip/hip_runtime.h>
+#include "papi.h"
+#include "hip/hip_runtime.h"
 //#include <rocblas.h>   // No longer needed since we use a custom kernel
 #include <unistd.h>      // For usleep()
 #include <sys/time.h>    // For gettimeofday()
