@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 # Adjust the file name if needed.
-csv_file = 'data/odyssey_gemm_7682_65536_1024_961_20RUNS.csv'
+csv_file = 'data/PAPI_EARLY_odyssey_gemv_87552_116736_1024_20RUNS.csv'
 
 # Read the CSV file.
 df = pd.read_csv(csv_file)
@@ -13,7 +13,7 @@ df['time_s'] = df['timestamp'] - df['timestamp'].iloc[0]
 
 # Define your device and sensor variables.
 device_id = 1
-sensor_id = 1
+sensor_id = 2
 
 temp = ["Edge", "Junction", "Memory"]
 temperature_column = f'rocm_smi:::temp_current:device={device_id}:sensor={sensor_id}'
