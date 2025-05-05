@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 # Adjust the file name if needed.
-csv_file = 'data/odyssey_gemm_14592_65536_1024_3249_20RUNS.csv'
+csv_file = 'data/dopamine_gemm_14592_65536_1024_3249_20RUNS3.csv'
 
 # Read the CSV file.
 df = pd.read_csv(csv_file)
@@ -19,7 +19,7 @@ df = pd.read_csv(csv_file)
 df['time_s'] = df['timestamp'] - df['timestamp'].iloc[0]
 
 # Define your device and sensor variables.
-device_id = 1
+device_id = 0
 sensor_id = 1
 
 temp = ["Edge", "Junction", "Memory"]
@@ -30,7 +30,7 @@ power_column = 'power'
 
 # Create the figure and the left y-axis (for Temperature).
 # Adjust the figure size to suit your needs.
-fig, ax1 = plt.subplots(figsize=(40, 6))
+fig, ax1 = plt.subplots(figsize=(90, 6))
 
 
 # Plot temperature on the left axis (same as before, in °C).
@@ -55,7 +55,7 @@ ax1.xaxis.grid(True, linestyle='--', linewidth=0.5)
 # If you know your temperature range, you can set ylim accordingly.
 ax1.set_ylim(0, 100)
 ax1.set_yticks(range(0, 101, 5))
-ax1.set_xticks(range(0, 3600, 5))
+ax1.set_xticks(range(0, 3600, 10))
 # Create the right y-axis for Power.
 ax2 = ax1.twinx()
 l2, = ax2.plot(

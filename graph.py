@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 # Adjust the file name if needed.
-csv_file = 'data/PAPI_EARLY_odyssey_gemv_87552_116736_1024_20RUNS.csv'
+csv_file = 'data/dopamine_gemm_14592_65536_1024_3249_20RUNS3.csv'
 
 # Read the CSV file.
 df = pd.read_csv(csv_file)
@@ -12,7 +12,7 @@ df = pd.read_csv(csv_file)
 df['time_s'] = df['timestamp'] - df['timestamp'].iloc[0]
 
 # Define your device and sensor variables.
-device_id = 1
+device_id = 0
 sensor_id = 2
 
 temp = ["Edge", "Junction", "Memory"]
@@ -39,7 +39,7 @@ ax1.yaxis.grid(True, linestyle='--', linewidth=0.5)
 
 # Improve the x-axis tick placement to show more detail.
 # Increase the number of major ticks so we can better see each iteration.
-ax1.set_xticks(range(0, 3600, 1))
+ax1.set_xticks(range(0, 3600, 10))
 
 
 # Create the right y-axis for Busy Percent and Memory Busy Percent.

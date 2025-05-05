@@ -1,0 +1,1762 @@
+2025-04-19 23:26:56 - GPU:0: No running processes
+2025-04-21 19:37:22 - GPU:0: No running processes
+2025-04-21 19:37:27 - GPU:0: No running processes
+2025-04-21 19:37:32 - GPU:0: No running processes
+2025-04-21 19:37:38 - GPU:0: No running processes
+2025-04-21 19:37:43 - GPU:0: No running processes
+2025-04-21 19:37:48 - GPU:0: No running processes
+2025-04-21 19:37:54 - GPU:0: No running processes
+2025-04-21 19:37:59 - GPU:0: No running processes
+2025-04-21 19:38:04 - GPU:0: No running processes
+2025-04-21 19:38:09 - GPU:0: No running processes
+2025-04-21 19:38:15 - GPU:0: No running processes
+2025-04-21 19:38:20 - GPU:0: No running processes
+2025-04-21 19:38:25 - GPU:0: No running processes
+2025-04-21 19:38:30 - GPU:0: No running processes
+2025-04-21 19:38:36 - GPU:0: No running processes
+2025-04-21 19:38:41 - GPU:0: No running processes
+2025-04-21 19:38:46 - GPU:0: No running processes
+2025-04-21 19:38:51 - GPU:0: No running processes
+2025-04-21 19:38:57 - GPU:0: No running processes
+2025-04-21 19:39:02 - GPU:0: No running processes
+2025-04-21 19:39:07 - GPU:0: No running processes
+2025-04-21 19:39:13 - GPU:0: No running processes
+2025-04-21 19:39:18 - GPU:0: No running processes
+2025-04-21 19:39:23 - GPU:0: No running processes
+2025-04-21 19:39:28 - GPU:0: No running processes
+2025-04-21 19:39:34 - GPU:0: No running processes
+2025-04-21 19:39:39 - GPU:0: No running processes
+2025-04-21 19:39:44 - GPU:0: No running processes
+2025-04-21 19:39:49 - GPU:0: No running processes
+2025-04-21 19:39:55 - GPU:0: No running processes
+2025-04-21 19:40:00 - GPU:0: No running processes
+2025-04-21 19:40:05 - GPU:0: No running processes
+2025-04-21 19:40:10 - GPU:0: No running processes
+2025-04-21 19:40:16 - GPU:0: No running processes
+2025-04-21 19:40:21 - GPU:0: No running processes
+2025-04-21 19:40:26 - GPU:0: No running processes
+2025-04-21 19:40:31 - GPU:0: No running processes
+2025-04-21 19:40:37 - GPU:0: No running processes
+2025-04-21 19:40:42 - GPU:0: No running processes
+2025-04-21 19:40:47 - GPU:0: No running processes
+2025-04-21 19:40:53 - GPU:0: No running processes
+2025-04-21 19:40:58 - GPU:0: No running processes
+2025-04-21 19:41:03 - GPU:0: No running processes
+2025-04-21 19:41:08 - GPU:0: No running processes
+2025-04-21 19:41:14 - GPU:0: No running processes
+2025-04-21 19:41:19 - GPU:0: No running processes
+2025-04-21 19:41:24 - GPU:0: No running processes
+2025-04-21 19:41:30 - GPU:0: No running processes
+2025-04-21 19:41:35 - GPU:0: No running processes
+2025-04-21 19:41:40 - GPU:0: No running processes
+2025-04-21 19:41:45 - GPU:0: No running processes
+2025-04-21 19:41:51 - GPU:0: No running processes
+2025-04-21 19:41:56 - GPU:0: No running processes
+2025-04-21 19:42:01 - GPU:0: No running processes
+2025-04-21 19:42:06 - GPU:0: No running processes
+2025-04-21 19:42:12 - GPU:0: No running processes
+2025-04-21 19:42:17 - GPU:0: No running processes
+2025-04-21 19:42:22 - GPU:0: No running processes
+2025-04-21 19:42:28 - GPU:0: No running processes
+2025-04-21 19:42:33 - GPU:0: No running processes
+2025-04-21 19:42:38 - GPU:0: No running processes
+2025-04-21 19:42:43 - GPU:0: No running processes
+2025-04-21 19:42:49 - GPU:0: No running processes
+2025-04-21 19:42:54 - GPU:0: No running processes
+2025-04-21 19:42:59 - GPU:0: No running processes
+2025-04-21 19:43:04 - GPU:0: No running processes
+2025-04-21 19:43:10 - GPU:0: No running processes
+2025-04-21 19:43:15 - GPU:0: No running processes
+2025-04-21 19:43:20 - GPU:0: No running processes
+2025-04-21 19:43:26 - GPU:0: No running processes
+2025-04-21 19:43:31 - GPU:0: No running processes
+2025-04-21 19:43:36 - GPU:0: No running processes
+2025-04-21 19:43:41 - GPU:0: No running processes
+2025-04-21 19:43:47 - GPU:0: No running processes
+2025-04-21 19:43:52 - GPU:0: No running processes
+2025-04-21 19:43:57 - GPU:0: No running processes
+2025-04-21 19:44:02 - GPU:0: No running processes
+2025-04-21 19:44:08 - GPU:0: No running processes
+2025-04-21 19:44:13 - GPU:0: No running processes
+2025-04-21 19:44:18 - GPU:0: No running processes
+2025-04-21 19:44:24 - GPU:0: No running processes
+2025-04-21 19:44:29 - GPU:0: No running processes
+2025-04-21 19:44:34 - GPU:0: No running processes
+2025-04-21 19:44:39 - GPU:0: No running processes
+2025-04-21 19:44:45 - GPU:0: No running processes
+2025-04-21 19:44:50 - GPU:0: No running processes
+2025-04-21 19:44:55 - GPU:0: No running processes
+2025-04-21 19:45:00 - GPU:0: No running processes
+2025-04-21 19:45:06 - GPU:0: No running processes
+2025-04-21 19:45:11 - GPU:0: No running processes
+2025-04-21 19:45:16 - GPU:0: No running processes
+2025-04-21 19:45:22 - GPU:0: No running processes
+2025-04-21 19:45:27 - GPU:0: No running processes
+2025-04-21 19:45:32 - GPU:0: No running processes
+2025-04-21 19:45:37 - GPU:0: No running processes
+2025-04-21 19:46:04 - GPU:0: PIDs: 1653777
+2025-04-21 19:46:09 - GPU:0: PIDs: 1653777
+2025-04-21 19:46:15 - GPU:0: PIDs: 1653777
+2025-04-21 19:46:21 - GPU:0: No running processes
+2025-04-21 19:46:37 - GPU:0: No running processes
+2025-04-21 19:46:43 - GPU:0: PIDs: 1653967
+2025-04-21 19:46:48 - GPU:0: PIDs: 1653967
+2025-04-21 19:46:53 - GPU:0: PIDs: 1653967
+2025-04-21 19:46:59 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:04 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:09 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:15 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:20 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:25 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:31 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:36 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:41 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:47 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:52 - GPU:0: PIDs: 1653967
+2025-04-21 19:47:57 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:03 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:08 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:13 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:18 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:24 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:29 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:34 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:40 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:45 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:50 - GPU:0: PIDs: 1653967
+2025-04-21 19:48:56 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:01 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:06 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:12 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:17 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:22 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:28 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:33 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:38 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:44 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:49 - GPU:0: PIDs: 1653967
+2025-04-21 19:49:54 - GPU:0: PIDs: 1653967
+2025-04-21 19:50:00 - GPU:0: PIDs: 1653967
+2025-04-21 19:50:05 - GPU:0: PIDs: 1653967
+2025-04-21 19:50:10 - GPU:0: PIDs: 1653967
+2025-04-21 19:50:16 - GPU:0: PIDs: 1653967
+2025-04-21 19:50:21 - GPU:0: PIDs: 1653967
+2025-04-21 19:50:26 - GPU:0: PIDs: 1653967
+2025-04-21 19:50:32 - GPU:0: No running processes
+2025-04-21 19:50:37 - GPU:0: No running processes
+2025-04-21 19:50:42 - GPU:0: No running processes
+2025-04-21 19:50:47 - GPU:0: No running processes
+2025-04-21 19:50:53 - GPU:0: No running processes
+2025-04-21 19:50:58 - GPU:0: No running processes
+2025-04-21 19:51:03 - GPU:0: No running processes
+2025-04-21 19:51:08 - GPU:0: No running processes
+2025-04-21 19:51:14 - GPU:0: No running processes
+2025-04-21 19:51:19 - GPU:0: No running processes
+2025-04-21 19:51:24 - GPU:0: No running processes
+2025-04-21 19:51:30 - GPU:0: No running processes
+2025-04-21 19:51:35 - GPU:0: No running processes
+2025-04-21 19:51:40 - GPU:0: No running processes
+2025-04-21 19:51:45 - GPU:0: No running processes
+2025-04-21 19:51:51 - GPU:0: No running processes
+2025-04-21 19:51:56 - GPU:0: No running processes
+2025-04-21 19:52:01 - GPU:0: No running processes
+2025-04-21 19:52:06 - GPU:0: No running processes
+2025-04-21 19:52:12 - GPU:0: No running processes
+2025-04-21 19:52:17 - GPU:0: No running processes
+2025-04-21 20:58:14 - GPU:0: No running processes
+2025-04-21 20:58:19 - GPU:0: No running processes
+2025-04-21 20:58:25 - GPU:0: No running processes
+2025-04-21 20:58:30 - GPU:0: No running processes
+2025-04-21 20:58:35 - GPU:0: No running processes
+2025-04-21 20:58:41 - GPU:0: No running processes
+2025-04-21 20:58:46 - GPU:0: No running processes
+2025-04-21 20:58:51 - GPU:0: No running processes
+2025-04-21 20:58:57 - GPU:0: No running processes
+2025-04-21 20:59:02 - GPU:0: No running processes
+2025-04-21 20:59:07 - GPU:0: No running processes
+2025-04-21 20:59:12 - GPU:0: No running processes
+2025-04-21 20:59:18 - GPU:0: No running processes
+2025-04-21 20:59:23 - GPU:0: No running processes
+2025-04-21 20:59:28 - GPU:0: No running processes
+2025-04-21 20:59:34 - GPU:0: No running processes
+2025-04-21 20:59:39 - GPU:0: No running processes
+2025-04-21 20:59:44 - GPU:0: No running processes
+2025-04-21 20:59:49 - GPU:0: No running processes
+2025-04-21 20:59:55 - GPU:0: No running processes
+2025-04-21 21:00:00 - GPU:0: No running processes
+2025-04-21 21:00:05 - GPU:0: No running processes
+2025-04-21 21:00:11 - GPU:0: No running processes
+2025-04-21 21:00:16 - GPU:0: No running processes
+2025-04-21 21:00:21 - GPU:0: No running processes
+2025-04-21 21:00:26 - GPU:0: No running processes
+2025-04-21 21:00:32 - GPU:0: No running processes
+2025-04-21 21:00:37 - GPU:0: No running processes
+2025-04-21 21:00:42 - GPU:0: No running processes
+2025-04-21 21:00:47 - GPU:0: No running processes
+2025-04-21 21:00:53 - GPU:0: No running processes
+2025-04-21 21:00:58 - GPU:0: No running processes
+2025-04-21 21:01:03 - GPU:0: No running processes
+2025-04-21 21:01:09 - GPU:0: No running processes
+2025-04-21 21:01:14 - GPU:0: No running processes
+2025-04-21 21:01:19 - GPU:0: No running processes
+2025-04-21 21:01:24 - GPU:0: No running processes
+2025-04-21 21:01:30 - GPU:0: No running processes
+2025-04-21 21:01:35 - GPU:0: No running processes
+2025-04-21 21:01:40 - GPU:0: No running processes
+2025-04-21 21:01:46 - GPU:0: No running processes
+2025-04-21 21:01:51 - GPU:0: No running processes
+2025-04-21 21:01:56 - GPU:0: No running processes
+2025-04-21 21:02:01 - GPU:0: No running processes
+2025-04-21 21:02:07 - GPU:0: No running processes
+2025-04-21 21:02:12 - GPU:0: No running processes
+2025-04-21 21:02:17 - GPU:0: No running processes
+2025-04-21 21:02:23 - GPU:0: No running processes
+2025-04-21 21:02:28 - GPU:0: No running processes
+2025-04-21 21:02:33 - GPU:0: No running processes
+2025-04-21 21:02:38 - GPU:0: No running processes
+2025-04-21 21:02:44 - GPU:0: No running processes
+2025-04-21 21:02:49 - GPU:0: No running processes
+2025-04-21 21:02:54 - GPU:0: No running processes
+2025-04-21 21:03:00 - GPU:0: No running processes
+2025-04-21 21:03:05 - GPU:0: No running processes
+2025-04-21 21:03:10 - GPU:0: No running processes
+2025-04-21 21:03:15 - GPU:0: No running processes
+2025-04-21 21:03:21 - GPU:0: No running processes
+2025-04-21 21:03:26 - GPU:0: No running processes
+2025-04-21 21:03:31 - GPU:0: No running processes
+2025-04-21 21:03:37 - GPU:0: No running processes
+2025-04-21 21:03:42 - GPU:0: No running processes
+2025-04-21 21:03:47 - GPU:0: No running processes
+2025-04-21 21:03:53 - GPU:0: No running processes
+2025-04-21 21:03:58 - GPU:0: No running processes
+2025-04-21 21:04:03 - GPU:0: No running processes
+2025-04-21 21:04:08 - GPU:0: No running processes
+2025-04-21 21:04:14 - GPU:0: No running processes
+2025-04-21 21:04:19 - GPU:0: No running processes
+2025-04-21 21:04:24 - GPU:0: No running processes
+2025-04-21 21:04:29 - GPU:0: No running processes
+2025-04-21 21:04:35 - GPU:0: No running processes
+2025-04-21 21:04:40 - GPU:0: No running processes
+2025-04-21 21:04:45 - GPU:0: No running processes
+2025-04-21 21:04:51 - GPU:0: No running processes
+2025-04-21 21:04:56 - GPU:0: No running processes
+2025-04-21 21:05:01 - GPU:0: No running processes
+2025-04-21 21:05:07 - GPU:0: No running processes
+2025-04-21 21:05:12 - GPU:0: No running processes
+2025-04-21 21:05:17 - GPU:0: No running processes
+2025-04-21 21:05:23 - GPU:0: No running processes
+2025-04-21 21:05:28 - GPU:0: No running processes
+2025-04-21 21:05:33 - GPU:0: No running processes
+2025-04-21 21:05:38 - GPU:0: No running processes
+2025-04-21 21:05:44 - GPU:0: No running processes
+2025-04-21 21:05:49 - GPU:0: No running processes
+2025-04-21 21:05:54 - GPU:0: No running processes
+2025-04-21 21:06:00 - GPU:0: No running processes
+2025-04-21 21:06:05 - GPU:0: No running processes
+2025-04-21 21:06:10 - GPU:0: No running processes
+2025-04-21 21:06:16 - GPU:0: No running processes
+2025-04-21 21:06:21 - GPU:0: No running processes
+2025-04-21 21:06:26 - GPU:0: No running processes
+2025-04-21 21:06:31 - GPU:0: No running processes
+2025-04-21 21:06:37 - GPU:0: No running processes
+2025-04-21 21:06:42 - GPU:0: No running processes
+2025-04-21 21:06:47 - GPU:0: No running processes
+2025-04-21 21:06:52 - GPU:0: No running processes
+2025-04-21 21:06:58 - GPU:0: No running processes
+2025-04-21 21:07:03 - GPU:0: No running processes
+2025-04-21 21:07:08 - GPU:0: PIDs: 1788398
+2025-04-21 21:07:23 - GPU:0: PIDs: 1788398
+2025-04-21 21:07:35 - GPU:0: PIDs: 1788398
+2025-04-21 21:07:47 - GPU:0: PIDs: 1788398
+2025-04-21 21:07:52 - GPU:0: PIDs: 1788398
+2025-04-21 21:07:58 - GPU:0: PIDs: 1788398
+2025-04-21 21:08:03 - GPU:0: PIDs: 1788398
+2025-04-21 21:08:09 - GPU:0: PIDs: 1788398
+2025-04-21 21:08:14 - GPU:0: PIDs: 1788398
+2025-04-21 21:08:19 - GPU:0: PIDs: 1788398
+2025-04-21 21:08:25 - GPU:0: PIDs: 1788398
+2025-04-21 21:08:30 - GPU:0: PIDs: 1788398
+2025-04-21 21:08:36 - GPU:0: PIDs: 1788398
+2025-04-21 21:08:41 - GPU:0: PIDs: 1788398
+2025-04-21 21:09:01 - GPU:0: PIDs: 1788398
+2025-04-21 21:09:17 - GPU:0: PIDs: 1788398
+2025-04-21 21:09:32 - GPU:0: PIDs: 1788398
+2025-04-21 21:09:46 - GPU:0: PIDs: 1788398
+2025-04-21 21:09:58 - GPU:0: PIDs: 1788398
+2025-04-21 21:10:12 - GPU:0: PIDs: 1788398
+2025-04-21 21:10:27 - GPU:0: PIDs: 1788398
+2025-04-21 21:10:41 - GPU:0: PIDs: 1788398
+2025-04-21 21:10:54 - GPU:0: PIDs: 1788398
+2025-04-21 21:10:59 - GPU:0: PIDs: 1788398
+2025-04-21 21:11:05 - GPU:0: PIDs: 1788398
+2025-04-21 21:11:10 - GPU:0: PIDs: 1788398
+2025-04-21 21:11:15 - GPU:0: PIDs: 1788398
+2025-04-21 21:11:21 - GPU:0: PIDs: 1788398
+2025-04-21 21:11:26 - GPU:0: PIDs: 1788398
+2025-04-21 21:11:41 - GPU:0: No running processes
+2025-04-21 21:11:49 - GPU:0: No running processes
+2025-04-21 21:11:54 - GPU:0: No running processes
+2025-04-21 21:12:00 - GPU:0: No running processes
+2025-04-21 21:12:05 - GPU:0: No running processes
+2025-04-21 21:12:10 - GPU:0: No running processes
+2025-04-21 21:12:15 - GPU:0: No running processes
+2025-04-21 21:12:21 - GPU:0: No running processes
+2025-04-21 21:12:26 - GPU:0: No running processes
+2025-04-21 21:12:31 - GPU:0: No running processes
+2025-04-21 21:12:36 - GPU:0: No running processes
+2025-04-21 21:12:42 - GPU:0: No running processes
+2025-04-21 21:12:47 - GPU:0: No running processes
+2025-04-21 21:12:52 - GPU:0: No running processes
+2025-04-21 21:12:58 - GPU:0: No running processes
+2025-04-21 21:13:03 - GPU:0: No running processes
+2025-04-21 21:13:08 - GPU:0: No running processes
+2025-04-21 21:13:13 - GPU:0: No running processes
+2025-04-21 21:13:19 - GPU:0: No running processes
+2025-04-21 21:13:24 - GPU:0: No running processes
+2025-04-21 21:13:29 - GPU:0: No running processes
+2025-04-21 21:13:35 - GPU:0: No running processes
+2025-04-21 21:13:40 - GPU:0: No running processes
+2025-04-21 21:13:45 - GPU:0: No running processes
+2025-04-21 21:13:51 - GPU:0: No running processes
+2025-04-21 21:13:56 - GPU:0: No running processes
+2025-04-21 21:14:01 - GPU:0: No running processes
+2025-04-21 21:14:06 - GPU:0: No running processes
+2025-04-21 21:14:12 - GPU:0: No running processes
+2025-04-21 21:14:17 - GPU:0: No running processes
+2025-04-21 21:14:22 - GPU:0: No running processes
+2025-04-21 21:14:28 - GPU:0: No running processes
+2025-04-21 21:14:33 - GPU:0: No running processes
+2025-04-21 21:14:38 - GPU:0: No running processes
+2025-04-21 21:14:43 - GPU:0: PIDs: 1797014
+2025-04-21 21:14:49 - GPU:0: PIDs: 1797014
+2025-04-21 21:14:54 - GPU:0: PIDs: 1797014 1800984
+2025-04-21 21:15:00 - GPU:0: PIDs: 1797014 1800984
+2025-04-21 21:15:05 - GPU:0: PIDs: 1797014 1800984
+2025-04-21 21:15:10 - GPU:0: PIDs: 1797014 1800984
+2025-04-21 21:15:16 - GPU:0: PIDs: 1797014 1800984
+2025-04-21 21:15:21 - GPU:0: PIDs: 1797014 1800984
+2025-04-21 21:15:26 - GPU:0: PIDs: 1797014 1800984
+2025-04-21 21:15:32 - GPU:0: PIDs: 1797014 1800984
+2025-04-21 21:15:37 - GPU:0: PIDs: 1797014
+2025-04-21 21:15:42 - GPU:0: PIDs: 1797014
+2025-04-21 21:15:48 - GPU:0: PIDs: 1797014
+2025-04-21 21:15:53 - GPU:0: PIDs: 1797014
+2025-04-21 21:15:58 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:04 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:09 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:15 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:20 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:25 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:31 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:36 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:41 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:47 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:52 - GPU:0: PIDs: 1797014
+2025-04-21 21:16:58 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:03 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:08 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:13 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:19 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:24 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:30 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:35 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:40 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:46 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:51 - GPU:0: PIDs: 1797014
+2025-04-21 21:17:56 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:02 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:07 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:12 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:18 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:23 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:28 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:34 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:39 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:44 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:50 - GPU:0: PIDs: 1797014
+2025-04-21 21:18:55 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:00 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:06 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:11 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:16 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:22 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:27 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:32 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:38 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:43 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:49 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:54 - GPU:0: PIDs: 1797014
+2025-04-21 21:19:59 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:05 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:10 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:16 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:21 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:26 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:32 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:37 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:42 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:48 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:53 - GPU:0: PIDs: 1797014
+2025-04-21 21:20:58 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:04 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:09 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:15 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:20 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:25 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:31 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:36 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:41 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:47 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:52 - GPU:0: PIDs: 1797014
+2025-04-21 21:21:57 - GPU:0: PIDs: 1797014
+2025-04-21 21:22:03 - GPU:0: No running processes
+2025-04-21 21:22:08 - GPU:0: No running processes
+2025-04-21 21:22:13 - GPU:0: No running processes
+2025-04-21 21:22:18 - GPU:0: No running processes
+2025-04-21 21:22:24 - GPU:0: No running processes
+2025-04-21 21:22:29 - GPU:0: No running processes
+2025-04-21 21:22:34 - GPU:0: No running processes
+2025-04-21 21:22:40 - GPU:0: No running processes
+2025-04-21 21:22:45 - GPU:0: No running processes
+2025-04-21 21:22:50 - GPU:0: No running processes
+2025-04-21 21:22:55 - GPU:0: No running processes
+2025-04-21 21:23:01 - GPU:0: No running processes
+2025-04-21 21:23:06 - GPU:0: No running processes
+2025-04-21 21:23:11 - GPU:0: No running processes
+2025-04-21 21:23:16 - GPU:0: No running processes
+2025-04-21 21:23:22 - GPU:0: No running processes
+2025-04-21 21:23:27 - GPU:0: No running processes
+2025-04-21 21:23:32 - GPU:0: No running processes
+2025-04-21 21:23:38 - GPU:0: No running processes
+2025-04-21 21:23:43 - GPU:0: No running processes
+2025-04-21 21:23:48 - GPU:0: No running processes
+2025-04-21 21:23:53 - GPU:0: No running processes
+2025-04-28 11:52:03 - GPU:0: No running processes
+2025-04-28 11:52:08 - GPU:0: No running processes
+2025-04-28 11:52:13 - GPU:0: No running processes
+2025-04-28 11:52:19 - GPU:0: No running processes
+2025-04-28 11:52:24 - GPU:0: No running processes
+2025-04-28 11:52:29 - GPU:0: No running processes
+2025-04-28 11:52:34 - GPU:0: No running processes
+2025-04-28 11:52:40 - GPU:0: No running processes
+2025-04-28 11:52:45 - GPU:0: No running processes
+2025-04-28 11:52:50 - GPU:0: No running processes
+2025-04-28 11:52:55 - GPU:0: No running processes
+2025-04-28 11:53:01 - GPU:0: No running processes
+2025-04-28 11:53:06 - GPU:0: No running processes
+2025-04-28 11:53:11 - GPU:0: No running processes
+2025-04-28 11:53:16 - GPU:0: No running processes
+2025-04-28 11:53:22 - GPU:0: No running processes
+2025-04-28 11:53:27 - GPU:0: No running processes
+2025-04-28 11:53:32 - GPU:0: No running processes
+2025-04-28 11:53:38 - GPU:0: No running processes
+2025-04-28 11:53:43 - GPU:0: No running processes
+2025-04-28 11:53:48 - GPU:0: No running processes
+2025-04-28 11:53:53 - GPU:0: No running processes
+2025-04-28 11:53:59 - GPU:0: No running processes
+2025-04-28 11:54:04 - GPU:0: No running processes
+2025-04-28 11:54:09 - GPU:0: No running processes
+2025-04-28 11:54:14 - GPU:0: No running processes
+2025-04-28 11:54:20 - GPU:0: No running processes
+2025-04-28 11:54:25 - GPU:0: No running processes
+2025-04-28 11:54:30 - GPU:0: No running processes
+2025-04-28 11:54:36 - GPU:0: No running processes
+2025-04-28 11:54:41 - GPU:0: No running processes
+2025-04-28 11:54:46 - GPU:0: No running processes
+2025-04-28 11:54:51 - GPU:0: No running processes
+2025-04-28 11:54:57 - GPU:0: No running processes
+2025-04-28 11:55:02 - GPU:0: No running processes
+2025-04-28 11:55:07 - GPU:0: No running processes
+2025-04-28 11:55:12 - GPU:0: No running processes
+2025-04-28 11:55:18 - GPU:0: No running processes
+2025-04-28 11:55:23 - GPU:0: No running processes
+2025-04-28 11:55:28 - GPU:0: No running processes
+2025-04-28 11:55:33 - GPU:0: No running processes
+2025-04-28 11:55:39 - GPU:0: No running processes
+2025-04-28 11:55:44 - GPU:0: No running processes
+2025-04-28 11:55:49 - GPU:0: No running processes
+2025-04-28 11:55:55 - GPU:0: No running processes
+2025-04-28 11:56:00 - GPU:0: No running processes
+2025-04-28 11:56:05 - GPU:0: No running processes
+2025-04-28 11:56:10 - GPU:0: No running processes
+2025-04-28 11:56:16 - GPU:0: No running processes
+2025-04-28 11:56:21 - GPU:0: No running processes
+2025-04-28 11:56:26 - GPU:0: No running processes
+2025-04-28 11:56:31 - GPU:0: No running processes
+2025-04-28 11:56:37 - GPU:0: No running processes
+2025-04-28 11:56:42 - GPU:0: No running processes
+2025-04-28 11:56:47 - GPU:0: No running processes
+2025-04-28 11:56:52 - GPU:0: No running processes
+2025-04-28 11:56:58 - GPU:0: No running processes
+2025-04-28 11:57:03 - GPU:0: No running processes
+2025-04-28 11:57:08 - GPU:0: No running processes
+2025-04-28 11:57:14 - GPU:0: No running processes
+2025-04-28 11:57:19 - GPU:0: No running processes
+2025-04-28 11:57:24 - GPU:0: No running processes
+2025-04-28 11:57:29 - GPU:0: No running processes
+2025-04-28 11:57:35 - GPU:0: No running processes
+2025-04-28 11:57:40 - GPU:0: No running processes
+2025-04-28 11:57:45 - GPU:0: No running processes
+2025-04-28 11:57:50 - GPU:0: No running processes
+2025-04-28 11:57:56 - GPU:0: No running processes
+2025-04-28 11:58:01 - GPU:0: No running processes
+2025-04-28 11:58:06 - GPU:0: No running processes
+2025-04-28 11:58:11 - GPU:0: No running processes
+2025-04-28 11:58:17 - GPU:0: No running processes
+2025-04-28 11:58:22 - GPU:0: No running processes
+2025-04-28 11:58:27 - GPU:0: No running processes
+2025-04-28 11:58:33 - GPU:0: No running processes
+2025-04-28 11:58:38 - GPU:0: No running processes
+2025-04-28 11:58:43 - GPU:0: No running processes
+2025-04-28 11:58:48 - GPU:0: No running processes
+2025-04-28 11:58:54 - GPU:0: No running processes
+2025-04-28 11:58:59 - GPU:0: No running processes
+2025-04-28 11:59:04 - GPU:0: No running processes
+2025-04-28 11:59:09 - GPU:0: No running processes
+2025-04-28 11:59:15 - GPU:0: No running processes
+2025-04-28 11:59:20 - GPU:0: No running processes
+2025-04-28 11:59:25 - GPU:0: No running processes
+2025-04-28 11:59:30 - GPU:0: No running processes
+2025-04-28 11:59:36 - GPU:0: No running processes
+2025-04-28 11:59:41 - GPU:0: No running processes
+2025-04-28 11:59:46 - GPU:0: No running processes
+2025-04-28 11:59:52 - GPU:0: No running processes
+2025-04-28 11:59:57 - GPU:0: No running processes
+2025-04-28 12:00:02 - GPU:0: No running processes
+2025-04-28 12:00:07 - GPU:0: No running processes
+2025-04-28 12:00:13 - GPU:0: No running processes
+2025-04-28 12:00:18 - GPU:0: No running processes
+2025-04-28 12:00:23 - GPU:0: No running processes
+2025-04-28 12:00:28 - GPU:0: No running processes
+2025-04-28 12:00:34 - GPU:0: No running processes
+2025-04-28 12:00:39 - GPU:0: No running processes
+2025-04-28 12:00:44 - GPU:0: No running processes
+2025-04-28 12:00:49 - GPU:0: No running processes
+2025-04-28 12:00:55 - GPU:0: No running processes
+2025-04-28 12:01:00 - GPU:0: No running processes
+2025-04-28 12:01:05 - GPU:0: No running processes
+2025-04-28 12:01:11 - GPU:0: No running processes
+2025-04-28 12:01:16 - GPU:0: No running processes
+2025-04-28 12:01:21 - GPU:0: No running processes
+2025-04-28 12:01:26 - GPU:0: No running processes
+2025-04-28 12:01:32 - GPU:0: No running processes
+2025-04-28 12:01:37 - GPU:0: No running processes
+2025-04-28 12:01:42 - GPU:0: No running processes
+2025-04-28 12:01:47 - GPU:0: No running processes
+2025-04-28 12:01:53 - GPU:0: No running processes
+2025-04-28 12:01:58 - GPU:0: No running processes
+2025-04-28 12:02:03 - GPU:0: No running processes
+2025-04-28 12:02:09 - GPU:0: No running processes
+2025-04-28 12:02:14 - GPU:0: No running processes
+2025-04-28 12:02:19 - GPU:0: No running processes
+2025-04-28 12:02:24 - GPU:0: No running processes
+2025-04-28 12:02:30 - GPU:0: No running processes
+2025-04-28 12:02:35 - GPU:0: No running processes
+2025-04-28 12:14:59 - GPU:0: PIDs: 2362674
+2025-04-28 12:15:04 - GPU:0: PIDs: 2362674
+2025-04-28 12:15:10 - GPU:0: PIDs: 2362674
+2025-04-28 12:15:15 - GPU:0: PIDs: 2362674
+2025-04-28 12:15:20 - GPU:0: PIDs: 2362674
+2025-04-28 12:15:25 - GPU:0: PIDs: 2362674
+2025-04-28 12:15:31 - GPU:0: PIDs: 2362674
+2025-04-28 12:15:36 - GPU:0: PIDs: 2362674
+2025-04-28 12:15:41 - GPU:0: No running processes
+2025-04-28 12:15:46 - GPU:0: No running processes
+2025-04-28 12:15:52 - GPU:0: No running processes
+2025-04-28 12:15:57 - GPU:0: No running processes
+2025-04-28 12:16:02 - GPU:0: No running processes
+2025-04-28 12:16:08 - GPU:0: No running processes
+2025-04-28 12:16:13 - GPU:0: No running processes
+2025-04-28 12:16:18 - GPU:0: No running processes
+2025-04-28 12:16:23 - GPU:0: PIDs: 2363042
+2025-04-28 12:16:29 - GPU:0: PIDs: 2363042
+2025-04-28 12:16:34 - GPU:0: PIDs: 2363042
+2025-04-28 12:16:39 - GPU:0: PIDs: 2363042
+2025-04-28 12:16:44 - GPU:0: PIDs: 2363042
+2025-04-28 12:16:50 - GPU:0: PIDs: 2363042
+2025-04-28 12:16:55 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:00 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:06 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:11 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:16 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:21 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:27 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:32 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:37 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:42 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:48 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:53 - GPU:0: PIDs: 2363042
+2025-04-28 12:17:58 - GPU:0: PIDs: 2363042
+2025-04-28 12:18:04 - GPU:0: PIDs: 2363042
+2025-04-28 12:18:09 - GPU:0: PIDs: 2363042
+2025-04-28 12:18:14 - GPU:0: PIDs: 2363042
+2025-04-28 12:18:19 - GPU:0: No running processes
+2025-04-28 12:18:25 - GPU:0: No running processes
+2025-05-03 23:22:40 - GPU:0: No running processes
+2025-05-03 23:22:45 - GPU:0: No running processes
+2025-05-03 23:22:50 - GPU:0: No running processes
+2025-05-03 23:22:56 - GPU:0: No running processes
+2025-05-03 23:23:01 - GPU:0: No running processes
+2025-05-03 23:23:06 - GPU:0: No running processes
+2025-05-03 23:23:12 - GPU:0: No running processes
+2025-05-03 23:23:17 - GPU:0: No running processes
+2025-05-03 23:23:22 - GPU:0: No running processes
+2025-05-03 23:23:28 - GPU:0: No running processes
+2025-05-03 23:23:33 - GPU:0: No running processes
+2025-05-03 23:23:38 - GPU:0: No running processes
+2025-05-03 23:23:44 - GPU:0: No running processes
+2025-05-03 23:23:49 - GPU:0: No running processes
+2025-05-03 23:23:54 - GPU:0: No running processes
+2025-05-03 23:24:00 - GPU:0: No running processes
+2025-05-03 23:24:05 - GPU:0: No running processes
+2025-05-03 23:24:10 - GPU:0: No running processes
+2025-05-03 23:24:16 - GPU:0: No running processes
+2025-05-03 23:24:21 - GPU:0: No running processes
+2025-05-03 23:24:27 - GPU:0: No running processes
+2025-05-03 23:24:32 - GPU:0: No running processes
+2025-05-03 23:24:38 - GPU:0: PIDs: 2294238
+2025-05-03 23:24:43 - GPU:0: PIDs: 2294238
+2025-05-03 23:24:49 - GPU:0: PIDs: 2294238
+2025-05-03 23:24:54 - GPU:0: PIDs: 2294238
+2025-05-03 23:25:00 - GPU:0: PIDs: 2294238
+2025-05-03 23:25:05 - GPU:0: PIDs: 2294238
+2025-05-03 23:25:11 - GPU:0: PIDs: 2294238
+2025-05-03 23:25:17 - GPU:0: PIDs: 2294238
+2025-05-03 23:25:22 - GPU:0: No running processes
+2025-05-03 23:25:28 - GPU:0: No running processes
+2025-05-03 23:25:33 - GPU:0: No running processes
+2025-05-03 23:25:39 - GPU:0: No running processes
+2025-05-03 23:25:44 - GPU:0: No running processes
+2025-05-03 23:25:50 - GPU:0: No running processes
+2025-05-03 23:25:55 - GPU:0: No running processes
+2025-05-03 23:26:01 - GPU:0: No running processes
+2025-05-03 23:26:06 - GPU:0: No running processes
+2025-05-03 23:26:12 - GPU:0: No running processes
+2025-05-03 23:26:17 - GPU:0: No running processes
+2025-05-03 23:26:23 - GPU:0: No running processes
+2025-05-03 23:26:28 - GPU:0: No running processes
+2025-05-03 23:26:34 - GPU:0: No running processes
+2025-05-03 23:26:40 - GPU:0: No running processes
+2025-05-03 23:26:45 - GPU:0: No running processes
+2025-05-03 23:26:51 - GPU:0: No running processes
+2025-05-03 23:26:56 - GPU:0: No running processes
+2025-05-03 23:27:02 - GPU:0: No running processes
+2025-05-03 23:27:07 - GPU:0: No running processes
+2025-05-03 23:27:13 - GPU:0: No running processes
+2025-05-03 23:27:18 - GPU:0: No running processes
+2025-05-03 23:27:24 - GPU:0: No running processes
+2025-05-03 23:27:29 - GPU:0: No running processes
+2025-05-03 23:27:35 - GPU:0: No running processes
+2025-05-03 23:27:40 - GPU:0: No running processes
+2025-05-03 23:27:46 - GPU:0: No running processes
+2025-05-03 23:27:51 - GPU:0: No running processes
+2025-05-03 23:27:57 - GPU:0: No running processes
+2025-05-03 23:28:02 - GPU:0: No running processes
+2025-05-03 23:28:07 - GPU:0: No running processes
+2025-05-03 23:28:13 - GPU:0: No running processes
+2025-05-03 23:28:19 - GPU:0: PIDs: 2307522
+2025-05-03 23:28:24 - GPU:0: PIDs: 2307522
+2025-05-03 23:28:29 - GPU:0: PIDs: 2307522
+2025-05-03 23:28:35 - GPU:0: PIDs: 2307522
+2025-05-03 23:28:40 - GPU:0: PIDs: 2307522
+2025-05-03 23:28:46 - GPU:0: PIDs: 2307522
+2025-05-03 23:28:51 - GPU:0: PIDs: 2307522
+2025-05-03 23:28:57 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:02 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:08 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:13 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:19 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:24 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:30 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:35 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:41 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:46 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:52 - GPU:0: PIDs: 2307522
+2025-05-03 23:29:57 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:03 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:08 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:14 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:19 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:25 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:30 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:36 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:41 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:47 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:52 - GPU:0: PIDs: 2307522
+2025-05-03 23:30:58 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:03 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:09 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:15 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:20 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:26 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:31 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:37 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:42 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:48 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:53 - GPU:0: PIDs: 2307522
+2025-05-03 23:31:59 - GPU:0: PIDs: 2307522
+2025-05-03 23:32:04 - GPU:0: No running processes
+2025-05-03 23:32:10 - GPU:0: No running processes
+2025-05-03 23:32:15 - GPU:0: No running processes
+2025-05-03 23:32:21 - GPU:0: No running processes
+2025-05-03 23:32:26 - GPU:0: No running processes
+2025-05-03 23:32:32 - GPU:0: No running processes
+2025-05-03 23:32:37 - GPU:0: No running processes
+2025-05-03 23:32:43 - GPU:0: No running processes
+2025-05-03 23:32:48 - GPU:0: No running processes
+2025-05-03 23:32:54 - GPU:0: No running processes
+2025-05-03 23:32:59 - GPU:0: No running processes
+2025-05-03 23:33:05 - GPU:0: No running processes
+2025-05-03 23:33:10 - GPU:0: No running processes
+2025-05-03 23:33:16 - GPU:0: No running processes
+2025-05-03 23:33:23 - GPU:0: No running processes
+2025-05-03 23:33:29 - GPU:0: No running processes
+2025-05-03 23:33:34 - GPU:0: No running processes
+2025-05-03 23:33:40 - GPU:0: No running processes
+2025-05-03 23:33:46 - GPU:0: No running processes
+2025-05-03 23:33:51 - GPU:0: No running processes
+2025-05-03 23:33:57 - GPU:0: No running processes
+2025-05-03 23:34:02 - GPU:0: No running processes
+2025-05-03 23:34:07 - GPU:0: No running processes
+2025-05-03 23:34:13 - GPU:0: No running processes
+2025-05-03 23:34:18 - GPU:0: No running processes
+2025-05-03 23:34:24 - GPU:0: No running processes
+2025-05-03 23:34:29 - GPU:0: No running processes
+2025-05-03 23:34:35 - GPU:0: No running processes
+2025-05-03 23:34:40 - GPU:0: No running processes
+2025-05-03 23:34:46 - GPU:0: No running processes
+2025-05-03 23:34:51 - GPU:0: No running processes
+2025-05-03 23:34:57 - GPU:0: No running processes
+2025-05-03 23:35:02 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:08 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:14 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:19 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:25 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:30 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:36 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:42 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:47 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:52 - GPU:0: PIDs: 2329788
+2025-05-03 23:35:58 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:04 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:09 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:15 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:20 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:26 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:31 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:37 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:43 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:48 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:54 - GPU:0: PIDs: 2329788
+2025-05-03 23:36:59 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:05 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:11 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:16 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:22 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:27 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:33 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:39 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:44 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:50 - GPU:0: PIDs: 2329788
+2025-05-03 23:37:55 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:01 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:06 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:12 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:17 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:23 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:29 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:34 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:40 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:45 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:51 - GPU:0: PIDs: 2329788
+2025-05-03 23:38:56 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:02 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:07 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:13 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:18 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:24 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:30 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:35 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:41 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:46 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:52 - GPU:0: PIDs: 2329788
+2025-05-03 23:39:57 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:03 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:09 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:14 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:19 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:25 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:30 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:36 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:41 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:47 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:53 - GPU:0: PIDs: 2329788
+2025-05-03 23:40:58 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:04 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:10 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:15 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:21 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:26 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:32 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:37 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:43 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:48 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:54 - GPU:0: PIDs: 2329788
+2025-05-03 23:41:59 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:05 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:10 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:16 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:21 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:27 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:32 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:38 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:43 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:49 - GPU:0: PIDs: 2329788
+2025-05-03 23:42:54 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:00 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:05 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:11 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:17 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:22 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:28 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:33 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:39 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:44 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:50 - GPU:0: PIDs: 2329788
+2025-05-03 23:43:55 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:01 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:06 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:12 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:18 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:23 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:29 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:34 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:40 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:45 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:51 - GPU:0: PIDs: 2329788
+2025-05-03 23:44:57 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:02 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:08 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:13 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:19 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:25 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:30 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:36 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:42 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:47 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:53 - GPU:0: PIDs: 2329788
+2025-05-03 23:45:58 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:04 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:10 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:15 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:21 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:26 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:32 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:37 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:43 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:49 - GPU:0: PIDs: 2329788
+2025-05-03 23:46:54 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:00 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:05 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:11 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:17 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:22 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:28 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:33 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:39 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:44 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:50 - GPU:0: PIDs: 2329788
+2025-05-03 23:47:55 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:01 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:06 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:12 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:17 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:23 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:29 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:34 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:40 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:45 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:51 - GPU:0: PIDs: 2329788
+2025-05-03 23:48:56 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:02 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:07 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:12 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:18 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:23 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:29 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:34 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:40 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:45 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:50 - GPU:0: PIDs: 2329788
+2025-05-03 23:49:56 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:01 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:06 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:12 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:17 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:22 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:28 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:33 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:38 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:44 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:49 - GPU:0: PIDs: 2329788
+2025-05-03 23:50:54 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:00 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:05 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:10 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:16 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:21 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:26 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:31 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:37 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:42 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:47 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:53 - GPU:0: PIDs: 2329788
+2025-05-03 23:51:58 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:03 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:09 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:14 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:19 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:25 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:30 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:35 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:41 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:46 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:51 - GPU:0: PIDs: 2329788
+2025-05-03 23:52:57 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:02 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:07 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:13 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:18 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:23 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:29 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:34 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:39 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:44 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:50 - GPU:0: PIDs: 2329788
+2025-05-03 23:53:55 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:00 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:06 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:11 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:16 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:22 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:27 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:32 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:38 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:43 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:48 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:54 - GPU:0: PIDs: 2329788
+2025-05-03 23:54:59 - GPU:0: PIDs: 2329788
+2025-05-03 23:55:04 - GPU:0: PIDs: 2329788
+2025-05-03 23:55:10 - GPU:0: PIDs: 2329788
+2025-05-03 23:55:15 - GPU:0: No running processes
+2025-05-03 23:55:20 - GPU:0: No running processes
+2025-05-03 23:55:26 - GPU:0: No running processes
+2025-05-03 23:55:31 - GPU:0: No running processes
+2025-05-03 23:55:36 - GPU:0: No running processes
+2025-05-03 23:55:41 - GPU:0: No running processes
+2025-05-03 23:55:47 - GPU:0: No running processes
+2025-05-03 23:55:52 - GPU:0: No running processes
+2025-05-03 23:55:57 - GPU:0: No running processes
+2025-05-03 23:56:03 - GPU:0: No running processes
+2025-05-03 23:56:08 - GPU:0: No running processes
+2025-05-03 23:56:13 - GPU:0: No running processes
+2025-05-03 23:56:19 - GPU:0: No running processes
+2025-05-03 23:56:24 - GPU:0: No running processes
+2025-05-03 23:56:29 - GPU:0: No running processes
+2025-05-03 23:56:34 - GPU:0: No running processes
+2025-05-03 23:56:40 - GPU:0: No running processes
+2025-05-03 23:56:45 - GPU:0: No running processes
+2025-05-03 23:56:50 - GPU:0: No running processes
+2025-05-03 23:56:56 - GPU:0: No running processes
+2025-05-03 23:57:01 - GPU:0: No running processes
+2025-05-03 23:57:06 - GPU:0: No running processes
+2025-05-03 23:57:12 - GPU:0: No running processes
+2025-05-03 23:57:17 - GPU:0: No running processes
+2025-05-03 23:57:22 - GPU:0: No running processes
+2025-05-03 23:57:28 - GPU:0: No running processes
+2025-05-03 23:57:33 - GPU:0: No running processes
+2025-05-03 23:57:38 - GPU:0: No running processes
+2025-05-03 23:57:44 - GPU:0: No running processes
+2025-05-03 23:57:49 - GPU:0: No running processes
+2025-05-03 23:57:54 - GPU:0: No running processes
+2025-05-03 23:57:59 - GPU:0: No running processes
+2025-05-03 23:58:05 - GPU:0: No running processes
+2025-05-03 23:58:10 - GPU:0: No running processes
+2025-05-03 23:58:15 - GPU:0: No running processes
+2025-05-03 23:58:21 - GPU:0: No running processes
+2025-05-03 23:58:26 - GPU:0: No running processes
+2025-05-03 23:58:31 - GPU:0: No running processes
+2025-05-03 23:58:37 - GPU:0: No running processes
+2025-05-03 23:58:42 - GPU:0: No running processes
+2025-05-03 23:58:47 - GPU:0: No running processes
+2025-05-03 23:58:53 - GPU:0: No running processes
+2025-05-03 23:58:58 - GPU:0: No running processes
+2025-05-03 23:59:03 - GPU:0: No running processes
+2025-05-03 23:59:08 - GPU:0: No running processes
+2025-05-03 23:59:14 - GPU:0: No running processes
+2025-05-03 23:59:19 - GPU:0: No running processes
+2025-05-03 23:59:24 - GPU:0: No running processes
+2025-05-03 23:59:30 - GPU:0: No running processes
+2025-05-03 23:59:35 - GPU:0: No running processes
+2025-05-03 23:59:40 - GPU:0: No running processes
+2025-05-03 23:59:46 - GPU:0: No running processes
+2025-05-03 23:59:51 - GPU:0: No running processes
+2025-05-03 23:59:56 - GPU:0: No running processes
+2025-05-04 00:00:02 - GPU:0: No running processes
+2025-05-04 00:00:07 - GPU:0: No running processes
+2025-05-04 00:00:12 - GPU:0: No running processes
+2025-05-04 00:00:18 - GPU:0: No running processes
+2025-05-04 00:00:23 - GPU:0: No running processes
+2025-05-04 00:00:28 - GPU:0: No running processes
+2025-05-04 00:00:33 - GPU:0: No running processes
+2025-05-04 00:00:39 - GPU:0: No running processes
+2025-05-04 00:00:44 - GPU:0: No running processes
+2025-05-04 00:00:49 - GPU:0: No running processes
+2025-05-04 00:00:55 - GPU:0: No running processes
+2025-05-04 00:01:00 - GPU:0: No running processes
+2025-05-04 00:01:05 - GPU:0: No running processes
+2025-05-04 00:01:11 - GPU:0: No running processes
+2025-05-04 00:01:16 - GPU:0: No running processes
+2025-05-04 00:01:21 - GPU:0: No running processes
+2025-05-04 00:01:27 - GPU:0: No running processes
+2025-05-04 00:01:32 - GPU:0: No running processes
+2025-05-04 00:01:37 - GPU:0: No running processes
+2025-05-04 00:01:42 - GPU:0: No running processes
+2025-05-04 00:01:48 - GPU:0: No running processes
+2025-05-04 00:01:53 - GPU:0: No running processes
+2025-05-04 00:01:58 - GPU:0: No running processes
+2025-05-04 00:02:04 - GPU:0: No running processes
+2025-05-04 00:02:09 - GPU:0: No running processes
+2025-05-04 00:02:14 - GPU:0: No running processes
+2025-05-04 00:02:20 - GPU:0: No running processes
+2025-05-04 00:02:25 - GPU:0: No running processes
+2025-05-04 00:02:30 - GPU:0: No running processes
+2025-05-04 00:02:36 - GPU:0: No running processes
+2025-05-04 00:02:41 - GPU:0: No running processes
+2025-05-04 00:02:46 - GPU:0: No running processes
+2025-05-04 00:02:52 - GPU:0: No running processes
+2025-05-04 00:02:57 - GPU:0: No running processes
+2025-05-04 00:03:02 - GPU:0: No running processes
+2025-05-04 00:03:07 - GPU:0: No running processes
+2025-05-04 00:03:13 - GPU:0: No running processes
+2025-05-04 00:03:18 - GPU:0: No running processes
+2025-05-04 00:03:23 - GPU:0: No running processes
+2025-05-04 00:03:29 - GPU:0: No running processes
+2025-05-04 00:03:34 - GPU:0: No running processes
+2025-05-04 00:03:39 - GPU:0: No running processes
+2025-05-04 00:03:45 - GPU:0: No running processes
+2025-05-04 00:03:50 - GPU:0: No running processes
+2025-05-04 00:03:56 - GPU:0: No running processes
+2025-05-04 00:04:01 - GPU:0: No running processes
+2025-05-04 00:04:06 - GPU:0: No running processes
+2025-05-04 00:04:11 - GPU:0: No running processes
+2025-05-04 00:04:17 - GPU:0: No running processes
+2025-05-04 00:04:22 - GPU:0: No running processes
+2025-05-04 00:04:27 - GPU:0: No running processes
+2025-05-04 00:04:33 - GPU:0: No running processes
+2025-05-04 00:04:38 - GPU:0: No running processes
+2025-05-04 00:04:44 - GPU:0: No running processes
+2025-05-04 00:04:49 - GPU:0: No running processes
+2025-05-04 00:04:55 - GPU:0: No running processes
+2025-05-04 00:05:00 - GPU:0: No running processes
+2025-05-04 00:05:06 - GPU:0: No running processes
+2025-05-04 00:05:11 - GPU:0: No running processes
+2025-05-04 00:05:17 - GPU:0: No running processes
+2025-05-04 00:05:22 - GPU:0: No running processes
+2025-05-04 00:05:28 - GPU:0: No running processes
+2025-05-04 00:05:34 - GPU:0: No running processes
+2025-05-04 00:05:39 - GPU:0: No running processes
+2025-05-04 00:05:45 - GPU:0: No running processes
+2025-05-04 00:05:50 - GPU:0: No running processes
+2025-05-04 00:05:56 - GPU:0: No running processes
+2025-05-04 00:06:01 - GPU:0: No running processes
+2025-05-04 00:06:06 - GPU:0: No running processes
+2025-05-04 00:06:12 - GPU:0: No running processes
+2025-05-04 00:06:17 - GPU:0: No running processes
+2025-05-04 00:06:23 - GPU:0: PIDs: 2736218 2736220
+2025-05-04 00:06:28 - GPU:0: No running processes
+2025-05-04 00:06:33 - GPU:0: No running processes
+2025-05-04 00:06:39 - GPU:0: PIDs: 2737011 2737013
+2025-05-04 00:06:44 - GPU:0: No running processes
+2025-05-04 00:06:49 - GPU:0: PIDs: 2737517 2737519
+2025-05-04 00:06:55 - GPU:0: PIDs: 2737719 2737721
+2025-05-04 00:07:00 - GPU:0: No running processes
+2025-05-04 00:07:06 - GPU:0: No running processes
+2025-05-04 00:07:11 - GPU:0: No running processes
+2025-05-04 00:07:16 - GPU:0: No running processes
+2025-05-04 00:07:22 - GPU:0: PIDs: 2738878 2738880
+2025-05-04 00:07:27 - GPU:0: PIDs: 2739081 2739083
+2025-05-04 00:07:32 - GPU:0: PIDs: 2739380 2739382
+2025-05-04 00:07:38 - GPU:0: PIDs: 2739624 2739626
+2025-05-04 00:07:43 - GPU:0: PIDs: 2739849 2739851
+2025-05-04 00:07:48 - GPU:0: No running processes
+2025-05-04 00:07:54 - GPU:0: No running processes
+2025-05-04 00:07:59 - GPU:0: PIDs: 2740554 2740556
+2025-05-04 00:08:05 - GPU:0: PIDs: 2740767 2740769
+2025-05-04 00:08:10 - GPU:0: No running processes
+2025-05-04 00:08:15 - GPU:0: No running processes
+2025-05-04 00:08:21 - GPU:0: PIDs: 2741564 2741566
+2025-05-04 00:08:26 - GPU:0: No running processes
+2025-05-04 00:08:31 - GPU:0: No running processes
+2025-05-04 00:08:37 - GPU:0: No running processes
+2025-05-04 00:08:42 - GPU:0: PIDs: 2742504
+2025-05-04 00:08:47 - GPU:0: PIDs: 2742777 2742779
+2025-05-04 00:08:53 - GPU:0: PIDs: 2743003 2743005
+2025-05-04 00:08:58 - GPU:0: PIDs: 2743292 2743294
+2025-05-04 00:09:03 - GPU:0: No running processes
+2025-05-04 00:09:09 - GPU:0: No running processes
+2025-05-04 00:09:14 - GPU:0: No running processes
+2025-05-04 00:09:20 - GPU:0: No running processes
+2025-05-04 00:09:25 - GPU:0: PIDs: 2759008 2759010
+2025-05-04 00:09:30 - GPU:0: No running processes
+2025-05-04 00:09:36 - GPU:0: No running processes
+2025-05-04 00:09:41 - GPU:0: PIDs: 2762346 2762348
+2025-05-04 00:09:46 - GPU:0: No running processes
+2025-05-04 00:09:52 - GPU:0: No running processes
+2025-05-04 00:09:57 - GPU:0: No running processes
+2025-05-04 00:10:02 - GPU:0: PIDs: 2764277 2764279
+2025-05-04 00:10:08 - GPU:0: PIDs: 2764277 2764279
+2025-05-04 00:10:13 - GPU:0: PIDs: 2764277 2764279
+2025-05-04 00:10:18 - GPU:0: No running processes
+2025-05-04 00:10:24 - GPU:0: No running processes
+2025-05-04 00:10:29 - GPU:0: PIDs: 2767487 2767489
+2025-05-04 00:10:35 - GPU:0: No running processes
+2025-05-04 00:10:40 - GPU:0: No running processes
+2025-05-04 00:10:45 - GPU:0: PIDs: 2768347 2768349
+2025-05-04 00:10:51 - GPU:0: No running processes
+2025-05-04 00:10:56 - GPU:0: PIDs: 2768848 2768850
+2025-05-04 00:11:01 - GPU:0: PIDs: 2768848 2768850
+2025-05-04 00:11:07 - GPU:0: PIDs: 2768848 2768850
+2025-05-04 00:11:12 - GPU:0: PIDs: 2768848 2768850
+2025-05-04 00:11:18 - GPU:0: PIDs: 2772119
+2025-05-04 00:11:23 - GPU:0: No running processes
+2025-05-04 00:11:28 - GPU:0: No running processes
+2025-05-04 00:11:34 - GPU:0: PIDs: 2772797 2772799
+2025-05-04 00:11:39 - GPU:0: PIDs: 2773033 2773035
+2025-05-04 00:11:44 - GPU:0: No running processes
+2025-05-04 00:11:50 - GPU:0: PIDs: 2773529 2773531
+2025-05-04 00:11:55 - GPU:0: PIDs: 2773807 2773809
+2025-05-04 00:12:00 - GPU:0: No running processes
+2025-05-04 00:12:06 - GPU:0: No running processes
+2025-05-04 00:12:11 - GPU:0: PIDs: 2774469 2774471
+2025-05-04 00:12:16 - GPU:0: PIDs: 2774740 2774742
+2025-05-04 00:12:22 - GPU:0: No running processes
+2025-05-04 00:12:27 - GPU:0: PIDs: 2775548 2775550
+2025-05-04 00:12:32 - GPU:0: PIDs: 2775830 2775832
+2025-05-04 00:12:38 - GPU:0: No running processes
+2025-05-04 00:12:43 - GPU:0: PIDs: 2776392 2776394
+2025-05-04 00:12:48 - GPU:0: No running processes
+2025-05-04 00:12:54 - GPU:0: PIDs: 2776941
+2025-05-04 00:12:59 - GPU:0: No running processes
+2025-05-04 00:13:04 - GPU:0: No running processes
+2025-05-04 00:13:10 - GPU:0: No running processes
+2025-05-04 00:13:15 - GPU:0: PIDs: 2780559 2780561
+2025-05-04 00:13:20 - GPU:0: No running processes
+2025-05-04 00:13:26 - GPU:0: No running processes
+2025-05-04 00:13:31 - GPU:0: No running processes
+2025-05-04 00:13:36 - GPU:0: No running processes
+2025-05-04 00:13:42 - GPU:0: No running processes
+2025-05-04 00:13:47 - GPU:0: No running processes
+2025-05-04 00:13:52 - GPU:0: No running processes
+2025-05-04 00:13:58 - GPU:0: No running processes
+2025-05-04 00:14:03 - GPU:0: No running processes
+2025-05-04 00:14:08 - GPU:0: No running processes
+2025-05-04 00:14:14 - GPU:0: No running processes
+2025-05-04 00:14:19 - GPU:0: No running processes
+2025-05-04 00:14:24 - GPU:0: No running processes
+2025-05-04 00:14:30 - GPU:0: No running processes
+2025-05-04 00:14:35 - GPU:0: No running processes
+2025-05-04 00:14:40 - GPU:0: No running processes
+2025-05-04 00:14:46 - GPU:0: No running processes
+2025-05-04 00:14:51 - GPU:0: No running processes
+2025-05-04 00:14:56 - GPU:0: No running processes
+2025-05-04 00:15:01 - GPU:0: No running processes
+2025-05-04 00:15:07 - GPU:0: No running processes
+2025-05-04 00:15:12 - GPU:0: No running processes
+2025-05-04 00:15:17 - GPU:0: No running processes
+2025-05-04 00:15:23 - GPU:0: No running processes
+2025-05-04 00:15:28 - GPU:0: No running processes
+2025-05-04 00:15:33 - GPU:0: No running processes
+2025-05-04 00:15:39 - GPU:0: No running processes
+2025-05-04 00:15:44 - GPU:0: No running processes
+2025-05-04 00:15:49 - GPU:0: No running processes
+2025-05-04 00:15:55 - GPU:0: No running processes
+2025-05-04 00:16:00 - GPU:0: No running processes
+2025-05-04 00:16:05 - GPU:0: No running processes
+2025-05-04 00:16:11 - GPU:0: No running processes
+2025-05-04 00:16:16 - GPU:0: No running processes
+2025-05-04 00:16:21 - GPU:0: No running processes
+2025-05-04 00:16:26 - GPU:0: No running processes
+2025-05-04 00:16:32 - GPU:0: No running processes
+2025-05-04 00:16:37 - GPU:0: No running processes
+2025-05-04 00:16:42 - GPU:0: No running processes
+2025-05-04 00:16:48 - GPU:0: No running processes
+2025-05-04 00:16:53 - GPU:0: No running processes
+2025-05-04 00:16:58 - GPU:0: No running processes
+2025-05-04 00:17:04 - GPU:0: No running processes
+2025-05-04 00:17:09 - GPU:0: No running processes
+2025-05-04 00:17:14 - GPU:0: No running processes
+2025-05-04 00:17:20 - GPU:0: No running processes
+2025-05-04 00:17:25 - GPU:0: No running processes
+2025-05-04 00:17:30 - GPU:0: No running processes
+2025-05-04 00:17:36 - GPU:0: No running processes
+2025-05-04 00:17:41 - GPU:0: No running processes
+2025-05-04 00:17:46 - GPU:0: No running processes
+2025-05-04 00:17:51 - GPU:0: No running processes
+2025-05-04 00:17:57 - GPU:0: No running processes
+2025-05-04 00:18:02 - GPU:0: No running processes
+2025-05-04 00:18:07 - GPU:0: No running processes
+2025-05-04 00:18:13 - GPU:0: No running processes
+2025-05-04 00:18:18 - GPU:0: No running processes
+2025-05-04 00:18:23 - GPU:0: No running processes
+2025-05-04 00:18:29 - GPU:0: No running processes
+2025-05-04 00:18:34 - GPU:0: No running processes
+2025-05-04 00:18:39 - GPU:0: No running processes
+2025-05-04 00:18:45 - GPU:0: No running processes
+2025-05-04 00:18:50 - GPU:0: No running processes
+2025-05-04 00:18:55 - GPU:0: No running processes
+2025-05-04 00:19:01 - GPU:0: No running processes
+2025-05-04 00:19:06 - GPU:0: No running processes
+2025-05-04 00:19:11 - GPU:0: No running processes
+2025-05-04 00:19:17 - GPU:0: No running processes
+2025-05-04 00:19:22 - GPU:0: No running processes
+2025-05-04 00:19:27 - GPU:0: No running processes
+2025-05-04 00:19:32 - GPU:0: No running processes
+2025-05-04 00:19:38 - GPU:0: No running processes
+2025-05-04 00:19:43 - GPU:0: No running processes
+2025-05-04 00:19:48 - GPU:0: PIDs: 2809343
+2025-05-04 00:19:54 - GPU:0: PIDs: 2809343
+2025-05-04 00:19:59 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:04 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:10 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:15 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:20 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:26 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:31 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:36 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:42 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:47 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:52 - GPU:0: PIDs: 2809343
+2025-05-04 00:20:58 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:03 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:08 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:13 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:19 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:24 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:29 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:35 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:40 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:45 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:51 - GPU:0: PIDs: 2809343
+2025-05-04 00:21:56 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:01 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:07 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:12 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:17 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:23 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:28 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:33 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:39 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:44 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:49 - GPU:0: PIDs: 2809343
+2025-05-04 00:22:55 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:00 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:05 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:11 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:16 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:21 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:27 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:32 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:37 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:43 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:48 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:53 - GPU:0: PIDs: 2809343
+2025-05-04 00:23:59 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:04 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:09 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:15 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:20 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:25 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:30 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:36 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:41 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:46 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:52 - GPU:0: PIDs: 2809343
+2025-05-04 00:24:57 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:02 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:08 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:13 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:18 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:24 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:29 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:34 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:40 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:45 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:50 - GPU:0: PIDs: 2809343
+2025-05-04 00:25:56 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:01 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:06 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:11 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:17 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:22 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:27 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:33 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:38 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:43 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:49 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:54 - GPU:0: PIDs: 2809343
+2025-05-04 00:26:59 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:05 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:10 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:15 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:21 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:26 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:31 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:37 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:42 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:47 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:53 - GPU:0: PIDs: 2809343
+2025-05-04 00:27:58 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:03 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:09 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:14 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:19 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:25 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:30 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:35 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:40 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:46 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:51 - GPU:0: PIDs: 2809343
+2025-05-04 00:28:56 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:02 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:07 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:12 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:18 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:23 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:28 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:34 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:39 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:44 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:50 - GPU:0: PIDs: 2809343
+2025-05-04 00:29:55 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:00 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:06 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:11 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:16 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:22 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:27 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:32 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:38 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:44 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:50 - GPU:0: PIDs: 2809343
+2025-05-04 00:30:55 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:00 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:06 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:11 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:16 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:22 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:27 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:32 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:38 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:43 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:48 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:54 - GPU:0: PIDs: 2809343
+2025-05-04 00:31:59 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:04 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:10 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:15 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:20 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:25 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:31 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:36 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:41 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:47 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:52 - GPU:0: PIDs: 2809343
+2025-05-04 00:32:57 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:03 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:08 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:13 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:19 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:24 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:29 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:35 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:40 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:45 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:51 - GPU:0: PIDs: 2809343
+2025-05-04 00:33:56 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:01 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:07 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:12 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:17 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:23 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:28 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:33 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:38 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:44 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:49 - GPU:0: PIDs: 2809343
+2025-05-04 00:34:54 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:00 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:05 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:10 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:16 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:21 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:26 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:32 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:37 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:42 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:48 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:53 - GPU:0: PIDs: 2809343
+2025-05-04 00:35:58 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:04 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:09 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:14 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:20 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:25 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:30 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:36 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:41 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:46 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:51 - GPU:0: PIDs: 2809343
+2025-05-04 00:36:57 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:02 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:07 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:13 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:18 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:23 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:29 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:34 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:39 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:45 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:50 - GPU:0: PIDs: 2809343
+2025-05-04 00:37:55 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:01 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:06 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:11 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:16 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:22 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:27 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:32 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:38 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:43 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:48 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:54 - GPU:0: PIDs: 2809343
+2025-05-04 00:38:59 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:04 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:10 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:15 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:20 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:26 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:31 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:36 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:42 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:47 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:52 - GPU:0: PIDs: 2809343
+2025-05-04 00:39:58 - GPU:0: PIDs: 2809343
+2025-05-04 00:40:03 - GPU:0: No running processes
+2025-05-04 00:40:08 - GPU:0: No running processes
+2025-05-04 00:40:14 - GPU:0: No running processes
+2025-05-04 00:40:19 - GPU:0: No running processes
+2025-05-04 00:40:24 - GPU:0: No running processes
+2025-05-04 00:40:29 - GPU:0: No running processes
+2025-05-04 00:40:35 - GPU:0: No running processes
+2025-05-04 00:40:40 - GPU:0: No running processes
+2025-05-04 00:40:45 - GPU:0: No running processes
+2025-05-04 00:40:51 - GPU:0: No running processes
+2025-05-04 00:40:56 - GPU:0: No running processes
+2025-05-04 00:41:01 - GPU:0: No running processes
+2025-05-04 00:41:07 - GPU:0: No running processes
+2025-05-04 00:41:12 - GPU:0: No running processes
+2025-05-04 00:41:17 - GPU:0: No running processes
+2025-05-04 00:41:23 - GPU:0: No running processes
+2025-05-04 00:41:28 - GPU:0: No running processes
+2025-05-04 00:41:33 - GPU:0: No running processes
+2025-05-04 00:41:39 - GPU:0: No running processes
+2025-05-04 00:41:44 - GPU:0: No running processes
+2025-05-04 00:41:49 - GPU:0: No running processes
+2025-05-04 00:41:54 - GPU:0: No running processes
+2025-05-04 00:42:00 - GPU:0: No running processes
+2025-05-04 00:42:05 - GPU:0: No running processes
+2025-05-04 00:42:10 - GPU:0: No running processes
+2025-05-04 00:42:16 - GPU:0: No running processes
+2025-05-04 00:42:21 - GPU:0: No running processes
+2025-05-04 00:42:26 - GPU:0: No running processes
+2025-05-04 00:42:32 - GPU:0: No running processes
+2025-05-04 00:42:37 - GPU:0: No running processes
+2025-05-04 00:42:42 - GPU:0: No running processes
+2025-05-04 00:42:48 - GPU:0: No running processes
+2025-05-04 00:42:53 - GPU:0: No running processes
+2025-05-04 00:42:58 - GPU:0: No running processes
+2025-05-04 00:43:03 - GPU:0: No running processes
+2025-05-04 00:43:09 - GPU:0: No running processes
+2025-05-04 00:43:14 - GPU:0: No running processes
+2025-05-04 00:43:19 - GPU:0: No running processes
+2025-05-04 00:43:25 - GPU:0: No running processes
+2025-05-04 00:43:30 - GPU:0: No running processes
+2025-05-04 00:43:35 - GPU:0: No running processes
+2025-05-04 00:43:41 - GPU:0: No running processes
+2025-05-04 00:43:46 - GPU:0: No running processes
+2025-05-04 00:43:51 - GPU:0: No running processes
+2025-05-04 00:43:57 - GPU:0: No running processes
+2025-05-04 00:44:02 - GPU:0: No running processes
+2025-05-04 00:44:07 - GPU:0: No running processes
+2025-05-04 00:44:12 - GPU:0: No running processes
+2025-05-04 00:44:18 - GPU:0: No running processes
+2025-05-04 00:44:23 - GPU:0: No running processes
+2025-05-04 00:44:28 - GPU:0: No running processes
+2025-05-04 00:44:34 - GPU:0: No running processes
+2025-05-04 00:44:39 - GPU:0: No running processes
+2025-05-04 00:44:44 - GPU:0: No running processes
+2025-05-04 00:44:50 - GPU:0: No running processes
+2025-05-04 00:44:55 - GPU:0: No running processes
+2025-05-04 00:45:00 - GPU:0: No running processes
+2025-05-04 00:45:06 - GPU:0: No running processes
+2025-05-04 00:45:11 - GPU:0: No running processes
+2025-05-04 00:45:16 - GPU:0: No running processes
+2025-05-04 00:45:22 - GPU:0: No running processes
+2025-05-04 00:45:27 - GPU:0: No running processes
+2025-05-04 00:45:32 - GPU:0: No running processes
+2025-05-04 00:45:37 - GPU:0: No running processes
+2025-05-04 00:45:43 - GPU:0: No running processes
+2025-05-04 00:45:48 - GPU:0: No running processes
+2025-05-04 00:45:53 - GPU:0: No running processes
+2025-05-04 00:45:59 - GPU:0: No running processes
+2025-05-04 00:46:04 - GPU:0: No running processes
+2025-05-04 00:46:09 - GPU:0: No running processes
+2025-05-04 00:46:15 - GPU:0: No running processes
+2025-05-04 00:46:20 - GPU:0: No running processes
+2025-05-04 00:46:25 - GPU:0: No running processes
+2025-05-04 00:46:31 - GPU:0: No running processes
+2025-05-04 00:46:36 - GPU:0: No running processes
+2025-05-04 00:46:41 - GPU:0: No running processes
+2025-05-04 00:46:47 - GPU:0: No running processes
+2025-05-04 00:46:52 - GPU:0: No running processes
+2025-05-04 00:46:57 - GPU:0: No running processes
+2025-05-04 00:47:02 - GPU:0: No running processes
+2025-05-04 00:47:08 - GPU:0: No running processes
+2025-05-04 00:47:13 - GPU:0: No running processes
+2025-05-04 00:47:18 - GPU:0: No running processes
+2025-05-04 00:47:24 - GPU:0: No running processes
+2025-05-04 00:47:29 - GPU:0: No running processes
+2025-05-04 00:47:34 - GPU:0: No running processes
+2025-05-04 00:47:40 - GPU:0: No running processes
+2025-05-04 00:47:45 - GPU:0: No running processes
+2025-05-04 00:47:50 - GPU:0: No running processes
+2025-05-04 00:47:56 - GPU:0: No running processes
+2025-05-04 00:48:01 - GPU:0: No running processes
+2025-05-04 00:48:06 - GPU:0: No running processes
+2025-05-04 00:48:12 - GPU:0: No running processes
+2025-05-04 00:48:17 - GPU:0: No running processes
+2025-05-04 00:48:22 - GPU:0: No running processes
+2025-05-04 00:48:27 - GPU:0: No running processes
+2025-05-04 00:48:33 - GPU:0: No running processes
+2025-05-04 00:48:38 - GPU:0: No running processes
+2025-05-04 00:48:43 - GPU:0: No running processes
+2025-05-04 00:48:49 - GPU:0: No running processes
+2025-05-04 00:48:54 - GPU:0: No running processes
+2025-05-04 00:48:59 - GPU:0: No running processes
+2025-05-04 00:49:05 - GPU:0: No running processes
+2025-05-04 00:49:10 - GPU:0: No running processes
+2025-05-04 00:49:15 - GPU:0: No running processes
+2025-05-04 00:49:21 - GPU:0: No running processes
+2025-05-04 00:49:26 - GPU:0: No running processes
+2025-05-04 00:49:31 - GPU:0: No running processes
+2025-05-04 00:49:36 - GPU:0: No running processes
+2025-05-04 00:49:42 - GPU:0: No running processes
+2025-05-04 00:49:47 - GPU:0: No running processes
+2025-05-04 00:49:52 - GPU:0: No running processes
+2025-05-04 00:49:58 - GPU:0: No running processes
+2025-05-04 00:50:03 - GPU:0: No running processes
+2025-05-04 00:50:08 - GPU:0: No running processes
+2025-05-04 00:50:14 - GPU:0: No running processes
+2025-05-04 00:50:19 - GPU:0: No running processes
+2025-05-04 00:50:24 - GPU:0: No running processes
+2025-05-04 00:50:30 - GPU:0: No running processes
+2025-05-04 00:50:35 - GPU:0: No running processes
+2025-05-04 00:50:40 - GPU:0: No running processes
+2025-05-04 00:50:45 - GPU:0: No running processes
+2025-05-04 00:50:51 - GPU:0: No running processes
+2025-05-04 00:50:56 - GPU:0: No running processes
+2025-05-04 00:51:01 - GPU:0: No running processes
+2025-05-04 00:51:07 - GPU:0: No running processes
+2025-05-04 00:51:12 - GPU:0: No running processes
+2025-05-04 00:51:17 - GPU:0: No running processes
+2025-05-04 00:51:23 - GPU:0: No running processes
+2025-05-04 00:51:28 - GPU:0: No running processes
+2025-05-04 00:51:33 - GPU:0: No running processes
+2025-05-04 00:51:39 - GPU:0: No running processes
+2025-05-04 00:51:44 - GPU:0: No running processes
+2025-05-04 00:51:49 - GPU:0: No running processes
+2025-05-04 00:51:54 - GPU:0: No running processes
+2025-05-04 00:52:00 - GPU:0: No running processes
+2025-05-04 00:52:05 - GPU:0: No running processes
+2025-05-04 00:52:10 - GPU:0: No running processes
+2025-05-04 00:52:16 - GPU:0: No running processes
+2025-05-04 00:52:21 - GPU:0: No running processes
+2025-05-04 00:52:26 - GPU:0: No running processes
+2025-05-04 00:52:32 - GPU:0: No running processes
+2025-05-04 00:52:37 - GPU:0: No running processes
+2025-05-04 00:52:42 - GPU:0: No running processes
+2025-05-04 00:52:48 - GPU:0: No running processes
+2025-05-04 00:52:53 - GPU:0: No running processes
+2025-05-04 00:52:58 - GPU:0: No running processes
+2025-05-04 00:53:03 - GPU:0: No running processes
+2025-05-04 00:53:09 - GPU:0: No running processes
+2025-05-04 00:53:14 - GPU:0: No running processes
+2025-05-04 00:53:19 - GPU:0: No running processes
+2025-05-04 00:53:25 - GPU:0: No running processes
+2025-05-04 00:53:30 - GPU:0: No running processes
+2025-05-04 00:53:35 - GPU:0: No running processes
+2025-05-04 00:53:41 - GPU:0: No running processes
+2025-05-04 00:53:46 - GPU:0: No running processes
+2025-05-04 00:53:51 - GPU:0: No running processes
+2025-05-04 00:53:57 - GPU:0: No running processes
+2025-05-04 00:54:02 - GPU:0: No running processes
+2025-05-04 00:54:07 - GPU:0: No running processes
+2025-05-04 00:54:13 - GPU:0: No running processes
+2025-05-04 00:54:18 - GPU:0: No running processes
+2025-05-04 00:54:23 - GPU:0: No running processes
+2025-05-04 00:54:28 - GPU:0: No running processes
+2025-05-04 00:54:34 - GPU:0: No running processes
+2025-05-04 00:54:39 - GPU:0: No running processes
+2025-05-04 00:54:44 - GPU:0: No running processes
+2025-05-04 00:54:50 - GPU:0: No running processes
+2025-05-04 00:54:55 - GPU:0: No running processes
+2025-05-04 00:55:00 - GPU:0: No running processes
+2025-05-04 00:55:06 - GPU:0: No running processes
+2025-05-04 00:55:11 - GPU:0: No running processes
+2025-05-04 00:55:16 - GPU:0: No running processes
+2025-05-04 00:55:22 - GPU:0: No running processes
+2025-05-04 00:55:27 - GPU:0: No running processes
+2025-05-04 00:55:32 - GPU:0: No running processes
+2025-05-04 00:55:38 - GPU:0: No running processes
+2025-05-04 00:55:43 - GPU:0: No running processes
+2025-05-04 00:55:48 - GPU:0: No running processes
+2025-05-04 00:55:53 - GPU:0: No running processes
+2025-05-04 00:55:59 - GPU:0: No running processes
+2025-05-04 00:56:04 - GPU:0: No running processes
+2025-05-04 00:56:09 - GPU:0: No running processes
+2025-05-04 00:56:15 - GPU:0: No running processes
+2025-05-04 00:56:20 - GPU:0: No running processes
+2025-05-04 00:56:25 - GPU:0: No running processes
+2025-05-04 00:56:31 - GPU:0: No running processes
+2025-05-04 00:56:36 - GPU:0: No running processes
+2025-05-04 00:56:41 - GPU:0: No running processes
+2025-05-04 00:56:47 - GPU:0: No running processes
+2025-05-04 00:56:52 - GPU:0: No running processes
+2025-05-04 00:56:57 - GPU:0: No running processes
+2025-05-04 00:57:02 - GPU:0: No running processes
+2025-05-04 00:57:08 - GPU:0: No running processes
+2025-05-04 00:57:13 - GPU:0: No running processes
+2025-05-04 00:57:18 - GPU:0: No running processes
+2025-05-04 00:57:24 - GPU:0: No running processes
+2025-05-04 00:57:29 - GPU:0: No running processes
+2025-05-04 00:57:34 - GPU:0: No running processes
+2025-05-04 00:57:40 - GPU:0: No running processes
+2025-05-04 00:57:45 - GPU:0: No running processes
+2025-05-04 00:57:50 - GPU:0: No running processes
+2025-05-04 00:57:56 - GPU:0: No running processes
+2025-05-04 00:58:01 - GPU:0: No running processes
+2025-05-04 00:58:06 - GPU:0: No running processes
+2025-05-04 00:58:12 - GPU:0: No running processes
+2025-05-04 00:58:17 - GPU:0: No running processes
+2025-05-04 00:58:22 - GPU:0: No running processes
+2025-05-04 00:58:27 - GPU:0: No running processes
+2025-05-04 00:58:33 - GPU:0: No running processes
+2025-05-04 00:58:38 - GPU:0: No running processes
+2025-05-04 00:58:43 - GPU:0: No running processes
+2025-05-04 00:58:49 - GPU:0: No running processes
+2025-05-04 00:58:54 - GPU:0: No running processes
+2025-05-04 00:58:59 - GPU:0: No running processes
+2025-05-04 00:59:05 - GPU:0: No running processes
+2025-05-04 00:59:10 - GPU:0: No running processes
+2025-05-04 00:59:15 - GPU:0: No running processes
+2025-05-04 00:59:21 - GPU:0: No running processes
+2025-05-04 00:59:26 - GPU:0: No running processes
+2025-05-04 00:59:31 - GPU:0: No running processes
+2025-05-04 00:59:37 - GPU:0: No running processes
+2025-05-04 00:59:42 - GPU:0: No running processes
+2025-05-04 00:59:47 - GPU:0: No running processes
+2025-05-04 00:59:53 - GPU:0: No running processes
+2025-05-04 00:59:58 - GPU:0: No running processes
+2025-05-04 01:00:03 - GPU:0: No running processes
+2025-05-04 01:00:08 - GPU:0: No running processes
+2025-05-04 01:00:14 - GPU:0: No running processes
+2025-05-04 01:00:19 - GPU:0: No running processes
+2025-05-04 01:00:24 - GPU:0: No running processes
+2025-05-04 01:00:30 - GPU:0: No running processes
+2025-05-04 01:00:35 - GPU:0: No running processes
+2025-05-04 01:00:40 - GPU:0: No running processes
+2025-05-04 01:00:46 - GPU:0: No running processes
+2025-05-04 01:00:51 - GPU:0: No running processes
+2025-05-04 01:00:56 - GPU:0: No running processes
+2025-05-04 01:01:02 - GPU:0: No running processes
+2025-05-04 01:01:07 - GPU:0: No running processes
+2025-05-04 01:01:12 - GPU:0: No running processes
+2025-05-04 01:01:17 - GPU:0: No running processes
+2025-05-04 01:01:23 - GPU:0: No running processes
+2025-05-04 01:01:28 - GPU:0: No running processes
+2025-05-04 01:01:33 - GPU:0: No running processes
+2025-05-04 01:01:39 - GPU:0: No running processes
+2025-05-04 01:01:44 - GPU:0: No running processes
+2025-05-04 01:01:49 - GPU:0: No running processes
+2025-05-04 01:01:55 - GPU:0: No running processes
+2025-05-04 01:02:00 - GPU:0: No running processes
+2025-05-04 01:02:05 - GPU:0: No running processes
+2025-05-04 01:02:10 - GPU:0: No running processes
+2025-05-04 01:02:16 - GPU:0: No running processes
+2025-05-04 01:02:21 - GPU:0: No running processes
+2025-05-04 01:02:26 - GPU:0: No running processes
+2025-05-04 01:02:32 - GPU:0: PIDs: 2821146
+2025-05-04 01:02:37 - GPU:0: PIDs: 2821146
+2025-05-04 01:02:42 - GPU:0: PIDs: 2821146
+2025-05-04 01:02:48 - GPU:0: PIDs: 2821146
+2025-05-04 01:02:53 - GPU:0: PIDs: 2821146
+2025-05-04 01:02:58 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:04 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:09 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:14 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:20 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:25 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:30 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:36 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:41 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:46 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:52 - GPU:0: PIDs: 2821146
+2025-05-04 01:03:57 - GPU:0: PIDs: 2821146
+2025-05-04 01:04:02 - GPU:0: PIDs: 2821146
+2025-05-04 01:04:08 - GPU:0: PIDs: 2821146
+2025-05-04 01:04:13 - GPU:0: PIDs: 2821146
+2025-05-04 01:04:18 - GPU:0: PIDs: 2821146
+2025-05-04 01:04:24 - GPU:0: No running processes
+2025-05-04 01:04:29 - GPU:0: No running processes
+2025-05-04 01:04:34 - GPU:0: No running processes
+2025-05-04 01:04:39 - GPU:0: No running processes
+2025-05-04 01:04:45 - GPU:0: No running processes
+2025-05-04 01:04:50 - GPU:0: No running processes
+2025-05-04 01:04:55 - GPU:0: No running processes
+2025-05-04 01:05:01 - GPU:0: No running processes
+2025-05-04 01:05:06 - GPU:0: No running processes
+2025-05-04 01:05:11 - GPU:0: No running processes
+2025-05-04 01:05:17 - GPU:0: No running processes
+2025-05-04 01:05:22 - GPU:0: No running processes
+2025-05-04 01:05:27 - GPU:0: No running processes
+2025-05-04 01:05:33 - GPU:0: No running processes
+2025-05-04 01:05:38 - GPU:0: No running processes
+2025-05-04 01:05:43 - GPU:0: No running processes
+2025-05-04 01:05:48 - GPU:0: No running processes
+2025-05-04 01:05:54 - GPU:0: No running processes
+2025-05-04 01:05:59 - GPU:0: No running processes
+2025-05-04 01:06:04 - GPU:0: No running processes
+2025-05-04 01:06:10 - GPU:0: No running processes
+2025-05-04 01:06:15 - GPU:0: No running processes
+2025-05-04 01:06:20 - GPU:0: No running processes
+2025-05-04 01:06:26 - GPU:0: No running processes
+2025-05-04 01:06:31 - GPU:0: No running processes
+2025-05-04 01:06:36 - GPU:0: No running processes
+2025-05-04 01:06:42 - GPU:0: No running processes
+2025-05-04 01:06:47 - GPU:0: No running processes
+2025-05-04 01:06:52 - GPU:0: No running processes
+2025-05-04 01:06:58 - GPU:0: No running processes
+2025-05-04 01:07:03 - GPU:0: No running processes
+2025-05-04 01:07:08 - GPU:0: No running processes
+2025-05-04 01:07:13 - GPU:0: No running processes
