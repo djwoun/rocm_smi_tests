@@ -13,7 +13,8 @@ temp_y_tick_interval = 5 # Interval for major ticks on the y-axis for Temperatur
 activity_y_tick_interval = 5 # <<<--- Using 5 for consistency on combined plots' activity axis
 figure_dpi = 150        # Dots Per Inch (resolution - higher value = clearer image)
 save_plots = True       # Set to True to save plots to files instead of just showing
-output_dir = "figure/6.4.0/GEMV/58368_116736/MI210/EARLY" # Directory to save plots if save_plots is True
+output_dir = "figure/6.4.0/GEMV/58368_116736/MI210/colmajor/2000"
+#"figure/6.4.0/GEMV/58368_116736/MI210/EARLY" # Directory to save plots if save_plots is True
 # --- NEW CONFIGURATION: Specify which plots to generate (by number 1-11) ---
 # Example: generate all plots including the new plot 11
 plots_to_generate = [1, 4, 6, 7, 8, 9, 10, 11]
@@ -30,7 +31,7 @@ if save_plots:
 
 # Read the CSV file.
 # *** IMPORTANT: Ensure this path is correct for your system ***
-csv_file = "data/gilgamesh_gemv_58368_116736_128_20RUNS_Monitor_EARLY.csv"
+csv_file = "data/colmajor_gilgamesh_gemv_58368_116736_128_2000_NOBREAK.csv"
 try:
     df = pd.read_csv(csv_file)
 except FileNotFoundError:
@@ -79,13 +80,13 @@ if 1 in plots_to_generate:
     print("Generating Plot 1: Temperature Plot...")
     fig, ax = plt.subplots(figsize=FIG_SIZE, dpi=figure_dpi)
     temp_cols = {
-        'Temp_Edge_mC': 'Edge Temp (°C)',
-        'Temp_Hotspot_Junction_mC': 'Hotspot/Junction Temp (°C)',
-        'Temp_VRAM_mC': 'VRAM Temp (°C)',
-        'Temp_HBM0_mC': 'HBM0 Temp (°C)',
-        'Temp_HBM1_mC': 'HBM1 Temp (°C)',
-        'Temp_HBM2_mC': 'HBM2 Temp (°C)',
-        'Temp_HBM3_mC': 'HBM3 Temp (°C)'
+        'Temp_Edge': 'Edge Temp (°C)',
+        'Temp_Hotspot_Junction': 'Hotspot/Junction Temp (°C)',
+        'Temp_VRAM': 'VRAM Temp (°C)',
+        'Temp_HBM0': 'HBM0 Temp (°C)',
+        'Temp_HBM1': 'HBM1 Temp (°C)',
+        'Temp_HBM2': 'HBM2 Temp (°C)',
+        'Temp_HBM3': 'HBM3 Temp (°C)'
     }
     for col, label in temp_cols.items():
         if col in df.columns:
@@ -321,7 +322,7 @@ if 5 in plots_to_generate:
 # --- Plot 6: Combined Temp/Activity Plot (Hotspot) ---
 if 6 in plots_to_generate:
     print("Generating Plot 6: Combined Hotspot Temp/Activity Plot...")
-    temp_col_p6 = 'Temp_Hotspot_Junction_mC'
+    temp_col_p6 = 'Temp_Hotspot_Junction'
     gfx_activity_col_p6 = 'GfxActivity_%'
     umc_activity_col_p6 = 'UmcActivity_%'
     required_cols_p6 = [temp_col_p6, gfx_activity_col_p6, umc_activity_col_p6]
@@ -377,7 +378,7 @@ if 6 in plots_to_generate:
 # --- Plot 7: Combined Temp/Activity Plot (Edge) ---
 if 7 in plots_to_generate:
     print("Generating Plot 7: Combined Edge Temp/Activity Plot...")
-    temp_col_p7 = 'Temp_Edge_mC'
+    temp_col_p7 = 'Temp_Edge'
     gfx_activity_col_p7 = 'GfxActivity_%'
     umc_activity_col_p7 = 'UmcActivity_%'
     required_cols_p7 = [temp_col_p7, gfx_activity_col_p7, umc_activity_col_p7]
@@ -430,7 +431,7 @@ if 7 in plots_to_generate:
 # --- Plot 8: Combined Temp/Activity Plot (VRAM) ---
 if 8 in plots_to_generate:
     print("Generating Plot 8: Combined VRAM Temp/Activity Plot...")
-    temp_col_p8 = 'Temp_VRAM_mC'
+    temp_col_p8 = 'Temp_VRAM'
     gfx_activity_col_p8 = 'GfxActivity_%' # Kept for check, but not plotted by default
     umc_activity_col_p8 = 'UmcActivity_%'
     required_cols_p8 = [temp_col_p8, umc_activity_col_p8] # Removed gfx_activity from required for plotting UMC
@@ -498,7 +499,7 @@ if 8 in plots_to_generate:
 # --- Plot 9: Combined Junction Temp/Power Plot ---
 if 9 in plots_to_generate:
     print("Generating Plot 9: Combined Junction Temp/Power Plot...")
-    temp_col_p9 = 'Temp_Hotspot_Junction_mC'
+    temp_col_p9 = 'Temp_Hotspot_Junction'
     power_col_p9 = 'AvgSocketPower_W'
     required_cols_p9 = [temp_col_p9, power_col_p9]
 
@@ -561,8 +562,8 @@ if 9 in plots_to_generate:
 # --- Plot 10: Combined VRAM/HBM Temp & Memory Activity Plot ---
 if 10 in plots_to_generate:
     print("Generating Plot 10: Combined VRAM/HBM Temp/Memory Activity Plot...")
-    hbm_temp_cols_p10 = ['Temp_HBM0_mC', 'Temp_HBM1_mC', 'Temp_HBM2_mC', 'Temp_HBM3_mC']
-    vram_temp_col_p10 = 'Temp_VRAM_mC'
+    hbm_temp_cols_p10 = ['Temp_HBM0', 'Temp_HBM1', 'Temp_HBM2', 'Temp_HBM3']
+    vram_temp_col_p10 = 'Temp_VRAM'
     mem_activity_col_p10 = 'UmcActivity_%'
     # Update required columns list - Check all HBM temps exist individually later
     required_cols_p10 = [vram_temp_col_p10, mem_activity_col_p10] + hbm_temp_cols_p10 # Check existence of all
@@ -634,8 +635,8 @@ if 10 in plots_to_generate:
 # --- Plot 11: Combined Junction/Memory Temp & Graphics/Memory Activity Plot ---
 if 11 in plots_to_generate:
     print("Generating Plot 11: Combined Junction/Memory Temp & Graphics/Memory Activity Plot...")
-    junction_temp_col_p11 = 'Temp_Hotspot_Junction_mC'
-    mem_temp_col_p11 = 'Temp_VRAM_mC'
+    junction_temp_col_p11 = 'Temp_Hotspot_Junction'
+    mem_temp_col_p11 = 'Temp_VRAM'
     gfx_activity_col_p11 = 'GfxActivity_%'
     mem_activity_col_p11 = 'UmcActivity_%'
     required_cols_p11 = [junction_temp_col_p11, mem_temp_col_p11, gfx_activity_col_p11, mem_activity_col_p11]
