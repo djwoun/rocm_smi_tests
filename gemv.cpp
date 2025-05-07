@@ -7,7 +7,7 @@
 #include <pthread.h>     // For pthreads
 
 // Define dimensions for DGEMV
-#define M_DIM 87552  // Number of rows in matrix A and length of result vector y
+#define M_DIM 58368  // Number of rows in matrix A and length of result vector y
 #define K_DIM 116736   // Number of columns in matrix A and length of vector x
 
 // Number of streams to use for concurrent execution
@@ -60,7 +60,7 @@ void *monitor_events(void *args) {
                 "rocm_smi:::memory_busy_percent:device=0: %lld\n",
                 elapsed, values[0], values[1], values[2], values[3], values[4], values[5]);
 
-        usleep(500000);  // Sleep for 0.5 seconds.
+        usleep(100000);  // Sleep for X seconds.
     }
     return NULL;
 }
@@ -137,9 +137,9 @@ int main(int argc, char *argv[]) {
     }
 
     /* Set HIP device properties to optimize for MI300 */
-    hipSetDevice(0);
+    hipSetDevice(1);
     hipDeviceProp_t deviceProp;
-    hipGetDeviceProperties(&deviceProp, 0);
+    hipGetDeviceProperties(&deviceProp, 1);
     printf("Device Name: %s\n", deviceProp.name);
     printf("Compute Units: %d\n", deviceProp.multiProcessorCount);
     printf("Max Threads Per Block: %d\n", deviceProp.maxThreadsPerBlock);
