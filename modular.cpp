@@ -103,8 +103,8 @@ public:
     h_A.resize(M*K);
     h_B.resize(K*N);
     h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = double(rand())/RAND_MAX;
+    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100);//double(rand())/RAND_MAX;
+    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100);//double(rand())/RAND_MAX;
   }
   void run() override {
     for (size_t j=0;j<N;++j){
@@ -134,8 +134,8 @@ public:
     h_A.resize(M*K);
     h_B.resize(K*N);
     h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = double(rand())/RAND_MAX;
+    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100);//double(rand())/RAND_MAX;
+    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100);//double(rand())/RAND_MAX;
   }
   void run() override {
     for (size_t i=0;i<M;++i){
@@ -158,32 +158,44 @@ public:
   void cleanup() override { h_A.clear(); h_B.clear(); h_C.clear(); }
 };
 
-// ----------------- GPU kernels (naive) -----------------
-// Row-major: C[row*N+col] = A[row*K + k]*B[k*N + col]
+// ----------------- GPU kernels (same logic as gemm.cpp) -----------------
 __global__ void dgemm_kernel_rowmajor(const double *A, const double *B, double *C,
                                       int M, int N, int K, double alpha, double beta) {
-  int row = blockIdx.y * blockDim.y + threadIdx.y;
-  int col = blockIdx.x * blockDim.x + threadIdx.x;
-  if (row < M && col < N) {
-    double sum=0.0;
-    for (int k=0; k<K; ++k) sum += A[row*K + k] * B[k*N + col];
-    C[row*N + col] = alpha*sum + beta*C[row*N + col];
-  }
+    // Compute the row and column index of the C element.
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (row < M && col < N) {
+        double sum = 0.0;
+        // Compute the dot product of row of A and column of B.
+        for (int k = 0; k < K; k++) {
+            sum += A[row * K + k] * B[k * N + col];
+            //sum += sin(A[row * K + k] * B[k * N + col]) + cos(A[row * K + k] * B[k * N + col]);
+        }
+        // Scale the result and add the scaled C element.
+        C[row * N + col] = alpha * sum + beta * C[row * N + col];
+    }
 }
 
-// Col-major: C[i + j*M] = A[i + l*M]*B[l + j*K]
 __global__ void dgemm_kernel_colmajor(const double *A, const double *B, double *C,
                                       int M, int N, int K, double alpha, double beta) {
-  int i = blockIdx.y * blockDim.y + threadIdx.y; // row
-  int j = blockIdx.x * blockDim.x + threadIdx.x; // col
-  if (i < M && j < N) {
-    double sum=0.0;
-    for (int l=0; l<K; ++l) sum += A[i + l*M] * B[l + j*K];
-    C[i + j*M] = alpha*sum + beta*C[i + j*M];
-  }
+    // Compute the row and column index of the C element (i=row, j=col).
+    int i = blockIdx.y * blockDim.y + threadIdx.y; // row
+    int j = blockIdx.x * blockDim.x + threadIdx.x; // col
+
+    if (i < M && j < N) {
+        double sum = 0.0;
+        // Compute the dot product of column-major A(:,l) and B(l,:).
+        for (int l = 0; l < K; l++) {
+            sum += A[i + l * M] * B[l + j * K];
+            //sum += sin(A[i + l * M] * B[l + j * K]) + cos(A[i + l * M] * B[l + j * K]);
+        }
+        // Scale the result and add the scaled C element.
+        C[i + j * M] = alpha * sum + beta * C[i + j * M];
+    }
 }
 
-// ----------------- GPU DGEMM (naive row/col) -----------------
+// ----------------- GPU DGEMM (row-major) -----------------
 class GpuRowDgemm : public IDgemm {
   double *dA=nullptr, *dB=nullptr, *dC=nullptr;
 public:
@@ -192,8 +204,8 @@ public:
     h_A.resize(M*K);
     h_B.resize(K*N);
     h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = double(rand())/RAND_MAX;
-    for (size_t i=0;i>K*N;++i) h_B[i] = double(rand())/RAND_MAX;
+    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100); // double(rand())/RAND_MAX;
+    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100); //double(rand())/RAND_MAX;  // fixed '<'
   }
   void run() override {
     // allocate & copy on first run (lazy allocate)
@@ -205,7 +217,7 @@ public:
       HIP_CHECK(hipMemcpy(dB, h_B.data(), K*N*sizeof(double), hipMemcpyHostToDevice));
       HIP_CHECK(hipMemset(dC, 0, M*N*sizeof(double)));
     }
-    const double alpha=1.0, beta=0.0;
+    const double alpha=0.75, beta=0.5;  // match gemm.cpp
     dim3 block(32,32);
     dim3 grid((N+block.x-1)/block.x, (M+block.y-1)/block.y);
     hipLaunchKernelGGL(dgemm_kernel_rowmajor, grid, block, 0, 0,
@@ -214,7 +226,7 @@ public:
   }
   void report(double t) const override {
     double gflops = (2.0*M*N*K)/(t*1e9);
-    std::cout<<"Implementation: GPU Row-Major DGEMM (naive)\n"
+    std::cout<<"Implementation: GPU Row-Major DGEMM (gemm.cpp logic)\n"
              <<"  Dimensions: M="<<M<<", N="<<N<<", K="<<K<<"\n"
              <<"  Execution Time: "<<std::fixed<<std::setprecision(6)<<t<<" s\n"
              <<"  Performance: "<<std::setprecision(2)<<gflops<<" GFLOPS\n";
@@ -227,6 +239,7 @@ public:
   }
 };
 
+// ----------------- GPU DGEMM (col-major) -----------------
 class GpuColDgemm : public IDgemm {
   double *dA=nullptr, *dB=nullptr, *dC=nullptr;
 public:
@@ -235,8 +248,8 @@ public:
     h_A.resize(M*K);
     h_B.resize(K*N);
     h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = double(rand())/RAND_MAX;
+    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100); // double(rand())/RAND_MAX;
+    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100); //double(rand())/RAND_MAX;
   }
   void run() override {
     if (!dA) {
@@ -247,7 +260,7 @@ public:
       HIP_CHECK(hipMemcpy(dB, h_B.data(), K*N*sizeof(double), hipMemcpyHostToDevice));
       HIP_CHECK(hipMemset(dC, 0, M*N*sizeof(double)));
     }
-    const double alpha=1.0, beta=0.0;
+    const double alpha=0.75, beta=0.5;  // match gemm.cpp
     dim3 block(32,32);
     dim3 grid((N+block.x-1)/block.x, (M+block.y-1)/block.y);
     hipLaunchKernelGGL(dgemm_kernel_colmajor, grid, block, 0, 0,
@@ -256,7 +269,7 @@ public:
   }
   void report(double t) const override {
     double gflops = (2.0*M*N*K)/(t*1e9);
-    std::cout<<"Implementation: GPU Col-Major DGEMM (naive)\n"
+    std::cout<<"Implementation: GPU Col-Major DGEMM (gemm.cpp logic)\n"
              <<"  Dimensions: M="<<M<<", N="<<N<<", K="<<K<<"\n"
              <<"  Execution Time: "<<std::fixed<<std::setprecision(6)<<t<<" s\n"
              <<"  Performance: "<<std::setprecision(2)<<gflops<<" GFLOPS\n";
@@ -277,8 +290,8 @@ public:
   void initialize(size_t m, size_t n, size_t k) override {
     M=m; N=n; K=k;
     h_A.resize(M*K); h_B.resize(K*N); h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = double(rand())/RAND_MAX;
+    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100); //double(rand())/RAND_MAX;
+    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100); //double(rand())/RAND_MAX;
     ROCBLAS_CHECK(rocblas_create_handle(&handle));
     HIP_CHECK(hipMalloc(&d_A, M*K*sizeof(double)));
     HIP_CHECK(hipMalloc(&d_B, K*N*sizeof(double)));
@@ -610,8 +623,8 @@ public:
 class DgemmFactory {
 public:
   static std::unique_ptr<IDgemm> create(const std::string& t){
-    if (t=="row")      return std::make_unique<GpuRowDgemm>();       // GPU (naive)
-    if (t=="col")      return std::make_unique<GpuColDgemm>();       // GPU (naive)
+    if (t=="row")      return std::make_unique<GpuRowDgemm>();       // GPU (row-major kernel)
+    if (t=="col")      return std::make_unique<GpuColDgemm>();       // GPU (col-major kernel)
     if (t=="rocblas")  return std::make_unique<RocblasDgemm>();      // GPU (lib)
     if (t=="row-cpu")  return std::make_unique<RowMajorCpu>();       // optional CPU
     if (t=="col-cpu")  return std::make_unique<ColumnMajorCpu>();    // optional CPU
