@@ -1,714 +1,638 @@
-// modular.cpp ? unified GEMM + modular monitors
-// Modes:
-//   Implementations: 'row' (GPU), 'col' (GPU), 'rocblas' (GPU)
-//                    also available: 'row-cpu', 'col-cpu' (optional CPU refs)
-//   Monitors:        'papi', 'amd', 'rocm', 'cli'
+// gemm.cpp  — unified runner with pluggable monitoring (PAPI | AMD SMI)
+// and pluggable compute: custom DGEMM kernel ("cus") or rocBLAS DGEMM ("rocblas")
+//
 // Usage:
-//   ./modular <implementation> <monitor> [M N K] [--print]
+//   ./gemm papi  rocblas [device]   | ./gemm papi  cus [device]
+//   ./gemm amd   rocblas [device]   | ./gemm amd   cus [device]
+//   ./gemm help
 //
-// Example:
-//   ./modular row papi 4096 4096 4096 --print
-//   ./modular col amd 8192 8192 8192 --print
-//   ./modular rocblas papi 8192 8192 8192 --print
+// Build:
+//   hipcc gemm.cpp -o gemm -lpapi -lamd_smi -lrocblas -lpthread
 //
-// Build (Makefile example matches your environment):
-//   HIPCC = hipcc
-//   PAPI ?= /storage/users/dwoun/apps/papi
-//   INC = -I${PAPI}/include
-//   LIB = -L${PAPI}/lib -lpapi -L/opt/rocm-6.4.0/lib -lpthread -lrocblas -lamd_smi -lrocm_smi64
-//   CFLAGS = -O2 -Wall
-//   %: %.cpp
-//     $(HIPCC) $(CFLAGS) $(INC) $(LIB) -Wl,-rpath,$(PAPI)/lib -o $@ $<
+// Notes:
+// - Everything else is left identical to your current file. The only changes are:
+//     (1) removal of the gpu_power placeholder from PAPI CSV/stdout,
+//     (2) per-kernel timing with HIP events and printing GFLOPS / TFLOPS,
+//     (3) the compute backend switch: "rocblas" or "cus" (unchanged).
+// - rocBLAS is fed your row-major A,B,C by doing the usual transpose trick:
+//     (C^T) = (B^T) * (A^T) in column-major so results match your kernel.
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <memory>
-#include <stdexcept>
-#include <iomanip>
-#include <cstdlib>
 #include <cstdio>
-#include <sstream>
-#include <algorithm>
-#include <thread>
+#include <cstdlib>
+#include <cstdint>
+#include <cstring>
+#include <string>
+#include <vector>
 #include <atomic>
-#include <sys/time.h>
+#include <thread>
+#include <chrono>
+#include <mutex>
+#include <condition_variable>
+
 #include <unistd.h>
-#include <string.h>   // strstr, sscanf, etc.
-#include <cmath>
+#include <sys/time.h>
 
-// HIP / rocBLAS
-#include <hip/hip_runtime.h>
-#include <rocblas/rocblas.h>
-
-// PAPI
-#include <papi.h>
-
-// AMD SMI (new) + ROCm SMI (legacy)
+#include "hip/hip_runtime.h"
+#include "papi.h"
 #include <amd_smi/amdsmi.h>
-#include <rocm_smi/rocm_smi.h>
+#include <rocblas.h>
 
-// ----------------- Helpers -----------------
-#define HIP_CHECK(cmd) do { \
-  hipError_t _e = (cmd); \
-  if (_e != hipSuccess) { \
-    std::cerr << "HIP error: " << hipGetErrorString(_e) \
-              << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
-    std::exit(EXIT_FAILURE); \
-  } \
-} while(0)
+// ===================== Tunables =====================
+#define M_DIM 14592
+#define K_DIM 65536
+#define N_DIM 14592
 
-#define ROCBLAS_CHECK(cmd) do { \
-  rocblas_status _s = (cmd); \
-  if (_s != rocblas_status_success) { \
-    std::cerr << "rocBLAS error: " << rocblas_status_to_string(_s) \
-              << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
-    std::exit(EXIT_FAILURE); \
-  } \
-} while(0)
+#define NUM_STREAMS 1
+#define ITERATIONS_PER_STREAM 1
 
-// ----------------- Interfaces -----------------
-class IDgemm {
-public:
-  virtual ~IDgemm() = default;
-  virtual void initialize(size_t M, size_t N, size_t K) = 0;
-  virtual void run() = 0;
-  virtual void report(double total_time_sec) const = 0;
-  virtual void cleanup() = 0;
-protected:
-  size_t M=0, N=0, K=0;
-  std::vector<double> h_A, h_B, h_C;
-};
+static int DEFAULT_DEVICE = 0;               // you can still override via argv/--device
+static int DEFAULT_MONITOR_US = 300000;      // 300 ms polling
 
-class IPerfMonitor {
-public:
-  virtual ~IPerfMonitor() = default;
-  virtual void start() = 0;
-  virtual void stop() = 0;
-  virtual void report() const = 0;
-  void setPrintEnabled(bool v){ printEnabled = v; }
-  void setName(const std::string& n){ name = n; }
-protected:
-  bool printEnabled=false;
-  std::string name;
-  timeval start_time{};
-};
+// ===================== Utility ======================
+static double now_seconds()
+{
+    static timeval t0 = [](){ timeval x; gettimeofday(&x,nullptr); return x; }();
+    timeval t; gettimeofday(&t,nullptr);
+    return (t.tv_sec - t0.tv_sec) + (t.tv_usec - t0.tv_usec)/1e6;
+}
 
-// ----------------- CPU DGEMM (optional) -----------------
-class ColumnMajorCpu : public IDgemm {
-public:
-  void initialize(size_t m, size_t n, size_t k) override {
-    M=m; N=n; K=k;
-    h_A.resize(M*K);
-    h_B.resize(K*N);
-    h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100);//double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100);//double(rand())/RAND_MAX;
-  }
-  void run() override {
-    for (size_t j=0;j<N;++j){
-      for (size_t i=0;i<M;++i){
-        double sum=0.0;
-        for (size_t l=0;l<K;++l){
-          sum += h_A[i + l*M] * h_B[l + j*K];
-        }
-        h_C[i + j*M] = sum;
-      }
-    }
-  }
-  void report(double t) const override {
-    double gflops = (2.0*M*N*K)/(t*1e9);
-    std::cout<<"Implementation: CPU Col-Major DGEMM\n"
-             <<"  Dimensions: M="<<M<<", N="<<N<<", K="<<K<<"\n"
-             <<"  Execution Time: "<<std::fixed<<std::setprecision(6)<<t<<" s\n"
-             <<"  Performance: "<<std::setprecision(2)<<gflops<<" GFLOPS\n";
-  }
-  void cleanup() override { h_A.clear(); h_B.clear(); h_C.clear(); }
-};
+static void usage(const char* prog) {
+    printf("Usage:\n");
+    printf("  %s papi  rocblas [device]\n", prog);
+    printf("  %s papi  cus     [device]\n", prog);
+    printf("  %s amd   rocblas [device]\n", prog);
+    printf("  %s amd   cus     [device]\n", prog);
+    printf("  %s help\n", prog);
+    printf("\nExamples:\n");
+    printf("  %s papi  rocblas --device 0\n", prog);
+    printf("  %s amd   cus 1\n", prog);
+}
 
-class RowMajorCpu : public IDgemm {
-public:
-  void initialize(size_t m, size_t n, size_t k) override {
-    M=m; N=n; K=k;
-    h_A.resize(M*K);
-    h_B.resize(K*N);
-    h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100);//double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100);//double(rand())/RAND_MAX;
-  }
-  void run() override {
-    for (size_t i=0;i<M;++i){
-      for (size_t j=0;j<N;++j){
-        double sum=0.0;
-        for (size_t l=0;l<K;++l){
-          sum += h_A[i*K + l] * h_B[l*N + j];
-        }
-        h_C[i*N + j] = sum;
-      }
-    }
-  }
-  void report(double t) const override {
-    double gflops = (2.0*M*N*K)/(t*1e9);
-    std::cout<<"Implementation: CPU Row-Major DGEMM\n"
-             <<"  Dimensions: M="<<M<<", N="<<N<<", K="<<K<<"\n"
-             <<"  Execution Time: "<<std::fixed<<std::setprecision(6)<<t<<" s\n"
-             <<"  Performance: "<<std::setprecision(2)<<gflops<<" GFLOPS\n";
-  }
-  void cleanup() override { h_A.clear(); h_B.clear(); h_C.clear(); }
-};
-
-// ----------------- GPU kernels (same logic as gemm.cpp) -----------------
-__global__ void dgemm_kernel_rowmajor(const double *A, const double *B, double *C,
-                                      int M, int N, int K, double alpha, double beta) {
-    // Compute the row and column index of the C element.
+// ===================== Kernel =======================
+__global__ void dgemm_kernel(const double *A, const double *B, double *C,
+                             int M, int N, int K, double alpha, double beta)
+{
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (row < M && col < N) {
         double sum = 0.0;
-        // Compute the dot product of row of A and column of B.
-        for (int k = 0; k < K; k++) {
+        for (int k = 0; k < K; ++k) {
             sum += A[row * K + k] * B[k * N + col];
-            //sum += sin(A[row * K + k] * B[k * N + col]) + cos(A[row * K + k] * B[k * N + col]);
         }
-        // Scale the result and add the scaled C element.
         C[row * N + col] = alpha * sum + beta * C[row * N + col];
     }
 }
 
-__global__ void dgemm_kernel_colmajor(const double *A, const double *B, double *C,
-                                      int M, int N, int K, double alpha, double beta) {
-    // Compute the row and column index of the C element (i=row, j=col).
-    int i = blockIdx.y * blockDim.y + threadIdx.y; // row
-    int j = blockIdx.x * blockDim.x + threadIdx.x; // col
+// =============== Monitor Abstraction =================
+struct Monitor {
+    virtual ~Monitor() {}
+    virtual bool start(FILE* csv, int device_index, int interval_us) = 0;
+    virtual void stop() = 0;
+};
 
-    if (i < M && j < N) {
-        double sum = 0.0;
-        // Compute the dot product of column-major A(:,l) and B(l,:).
-        for (int l = 0; l < K; l++) {
-            sum += A[i + l * M] * B[l + j * K];
-            //sum += sin(A[i + l * M] * B[l + j * K]) + cos(A[i + l * M] * B[l + j * K]);
+// ---------------- PAPI Monitor -----------------------
+struct PapiMonitor : public Monitor {
+    std::atomic<bool> stop_{false};
+    std::thread th_;
+    int EventSet_ = PAPI_NULL;
+    std::vector<const char*> names_;
+
+    bool start(FILE* csv, int device_index, int interval_us) override {
+        char buf[128];
+        auto name = [&](const char* fmt)->const char*{
+            static std::vector<std::string> store;
+            snprintf(buf, sizeof(buf), fmt, device_index);
+            store.emplace_back(buf);
+            return store.back().c_str();
+        };
+
+        names_ = {
+            name("amd_smi:::temp_current:device=%d:sensor=0"),
+            name("amd_smi:::temp_current:device=%d:sensor=1"),
+            name("amd_smi:::temp_current:device=%d:sensor=2"),
+            name("amd_smi:::temp_current:device=%d:sensor=3"),
+            name("amd_smi:::temp_current:device=%d:sensor=4"),
+            name("amd_smi:::temp_current:device=%d:sensor=5"),
+            name("amd_smi:::temp_current:device=%d:sensor=6"),
+            name("amd_smi:::temp_current:device=%d:sensor=7"),
+            name("amd_smi:::gfx_activity:device=%d"),
+            name("amd_smi:::umc_activity:device=%d"),
+            name("amd_smi:::mm_activity:device=%d"),
+            name("amd_smi:::power_average:device=%d"),
+            name("amd_smi:::power_cap_range_min:device=%d"),
+            name("amd_smi:::power_cap_range_max:device=%d"),
+            name("amd_smi:::mem_usage_VRAM:device=%d"),
+            name("amd_smi:::mem_total_VRAM:device=%d"),
+            name("amd_smi:::clk_freq_current:device=%d"),
+        };
+
+        int st = PAPI_library_init(PAPI_VER_CURRENT);
+        if (st != PAPI_VER_CURRENT) {
+            fprintf(stderr, "PAPI init failed: %s\n", PAPI_strerror(st));
+            return false;
         }
-        // Scale the result and add the scaled C element.
-        C[i + j * M] = alpha * sum + beta * C[i + j * M];
+        st = PAPI_create_eventset(&EventSet_);
+        if (st != PAPI_OK) { fprintf(stderr, "PAPI_create_eventset failed: %s\n", PAPI_strerror(st)); return false; }
+        for (size_t i=0;i<names_.size();++i) {
+            st = PAPI_add_named_event(EventSet_, names_[i]);
+            if (st != PAPI_OK) { fprintf(stderr, "PAPI_add_named_event[%zu] (%s) failed: %s\n", i, names_[i], PAPI_strerror(st)); return false; }
+        }
+        st = PAPI_start(EventSet_);
+        if (st != PAPI_OK) { fprintf(stderr, "PAPI_start failed: %s\n", PAPI_strerror(st)); return false; }
+
+        // CSV header (gpu_power removed)
+        fprintf(csv, "timestamp");
+        for (auto n : names_) fprintf(csv, ",%s", n);
+        fprintf(csv, "\n");
+        fflush(csv);
+
+        th_ = std::thread([=]() {
+            std::vector<long long> values(names_.size(), 0);
+            while (!stop_.load(std::memory_order_relaxed)) {
+                int s = PAPI_read(EventSet_, values.data());
+                if (s != PAPI_OK) {
+                    fprintf(stderr, "PAPI_read failed: %s\n", PAPI_strerror(s));
+                    break;
+                }
+                double t = now_seconds();
+
+                // CSV line (no gpu_power)
+                fprintf(csv, "%.6f", t);
+                for (auto v : values) fprintf(csv, ",%lld", v);
+                fprintf(csv, "\n");
+                fflush(csv);
+
+                // stdout (compact; no P=...)
+                fprintf(stdout, "Time %.3f |", t);
+                for (size_t i=0;i<values.size();++i) {
+                    fprintf(stdout, " e%zu=%lld", i, values[i]);
+                }
+                fprintf(stdout, "\n");
+
+                std::this_thread::sleep_for(std::chrono::microseconds(interval_us));
+            }
+        });
+        return true;
+    }
+
+    void stop() override {
+        stop_.store(true, std::memory_order_relaxed);
+        if (th_.joinable()) th_.join();
+        if (EventSet_ != PAPI_NULL) {
+            PAPI_stop(EventSet_, nullptr);
+            PAPI_cleanup_eventset(EventSet_);
+            PAPI_destroy_eventset(&EventSet_);
+            EventSet_ = PAPI_NULL;
+        }
+    }
+};
+
+// ---------------- AMD SMI Monitor --------------------
+struct AmdSmiMonitor : public Monitor {
+    std::atomic<bool> stop_{false};
+    std::thread th_;
+    amdsmi_processor_handle target_ = nullptr;
+
+    struct Col { const char* name; };
+    std::vector<Col> cols_;
+
+    static amdsmi_processor_handle find_gpu_by_logical_index(uint32_t idx) {
+        amdsmi_status_t st;
+        uint32_t sock_count = 0;
+        st = amdsmi_get_socket_handles(&sock_count, nullptr);
+        if (st != AMDSMI_STATUS_SUCCESS || sock_count == 0) return nullptr;
+
+        std::vector<amdsmi_socket_handle> sockets(sock_count);
+        st = amdsmi_get_socket_handles(&sock_count, sockets.data());
+        if (st != AMDSMI_STATUS_SUCCESS) return nullptr;
+
+        uint32_t seen = 0;
+        for (uint32_t s=0; s<sock_count; ++s) {
+            uint32_t dev_count = 0;
+            st = amdsmi_get_processor_handles(sockets[s], &dev_count, nullptr);
+            if (st != AMDSMI_STATUS_SUCCESS || dev_count == 0) continue;
+            std::vector<amdsmi_processor_handle> ph(dev_count);
+            st = amdsmi_get_processor_handles(sockets[s], &dev_count, ph.data());
+            if (st != AMDSMI_STATUS_SUCCESS) continue;
+
+            for (uint32_t i=0; i<dev_count; ++i) {
+                processor_type_t ty;
+                if (amdsmi_get_processor_type(ph[i], &ty) == AMDSMI_STATUS_SUCCESS &&
+                    ty == AMDSMI_PROCESSOR_TYPE_AMD_GPU)
+                {
+                    if (seen == idx) return ph[i];
+                    ++seen;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    bool start(FILE* csv, int device_index, int interval_us) override {
+        if (amdsmi_init(AMDSMI_INIT_AMD_GPUS) != AMDSMI_STATUS_SUCCESS) {
+            fprintf(stderr, "AMD SMI init failed\n");
+            return false;
+        }
+        target_ = find_gpu_by_logical_index(device_index);
+        if (!target_) {
+            fprintf(stderr, "AMD SMI: could not find GPU handle for logical index %d\n", device_index);
+            amdsmi_shut_down();
+            return false;
+        }
+
+        cols_ = {
+            {"Temp_Edge_C"}, {"Temp_Hotspot_C"}, {"Temp_VRAM_C"},
+            {"GfxActivity_%"}, {"UmcActivity_%"}, {"MmActivity_%"},
+            {"AvgSocketPower_W"}, {"CurrentSocketPower_W"},
+            {"SelectedClk_SYS_MHz"}, {"SelectedClk_MEM_MHz"},
+            {"ActualAvgClk_GFX_MHz"}, {"ActualAvgClk_MEM_MHz"},
+            {"VramTotal_Bytes"}, {"VramUsed_Bytes"},
+            {"FanSpeed_RPM"},
+            {"PCIe_CurrentWidth"}, {"PCIe_CurrentSpeed_x0.1GTs"}, {"PCIe_CurrentBandwidth_Mbps"},
+            {"ThrottleMask"}, {"IndepThrottleMask"},
+            {"ProchotResidency_ns"}, {"PptResidency_ns"},
+            {"SocketThmResidency_ns"}, {"VrThmResidency_ns"}, {"HbmThmResidency_ns"},
+            {"AccumCounter_ns"}
+        };
+
+        fprintf(csv, "timestamp");
+        for (auto &c : cols_) fprintf(csv, ",%s", c.name);
+        fprintf(csv, "\n"); fflush(csv);
+
+        th_ = std::thread([=]() {
+            while (!stop_.load(std::memory_order_relaxed)) {
+                double t = now_seconds();
+                std::vector<long long> v(cols_.size(), -99);
+
+                auto temp = [&](amdsmi_temperature_type_t ty)->long long {
+                    int64_t value = -1;
+                    amdsmi_get_temp_metric(target_, ty, AMDSMI_TEMP_CURRENT, &value);
+                    return (long long)value;
+                };
+                v[0] = temp(AMDSMI_TEMPERATURE_TYPE_EDGE);
+                v[1] = temp(AMDSMI_TEMPERATURE_TYPE_HOTSPOT);
+                v[2] = temp(AMDSMI_TEMPERATURE_TYPE_VRAM);
+
+                amdsmi_engine_usage_t act{};
+                if (amdsmi_get_gpu_activity(target_, &act) == AMDSMI_STATUS_SUCCESS) {
+                    v[3] = act.gfx_activity;
+                    v[4] = act.umc_activity;
+                    v[5] = act.mm_activity;
+                }
+
+                amdsmi_power_info_t pwr{};
+                if (amdsmi_get_power_info(target_, &pwr) == AMDSMI_STATUS_SUCCESS) {
+                    v[6] = (long long)pwr.average_socket_power;
+                    v[7] = (long long)pwr.current_socket_power;
+                }
+
+                auto clk_selected = [&](amdsmi_clk_type_t ty)->long long {
+                    amdsmi_frequencies_t f{};
+                    if (amdsmi_get_clk_freq(target_, ty, &f) == AMDSMI_STATUS_SUCCESS) {
+                        if (f.current < f.num_supported) {
+                            uint64_t hz = f.frequency[f.current];
+                            return (long long)(hz/1000000ULL);
+                        }
+                    }
+                    return (long long)-1;
+                };
+                v[8]  = clk_selected(AMDSMI_CLK_TYPE_SYS);
+                v[9]  = clk_selected(AMDSMI_CLK_TYPE_MEM);
+
+                auto clk_avg = [&](amdsmi_clk_type_t ty)->long long {
+                    amdsmi_clk_info_t ci{};
+                    if (amdsmi_get_clock_info(target_, ty, &ci) == AMDSMI_STATUS_SUCCESS) {
+                        return (long long)ci.clk; // MHz
+                    }
+                    return (long long)-1;
+                };
+                v[10] = clk_avg(AMDSMI_CLK_TYPE_GFX);
+                v[11] = clk_avg(AMDSMI_CLK_TYPE_MEM);
+
+                {
+                    uint64_t total=0, used=0;
+                    if (amdsmi_get_gpu_memory_total(target_, AMDSMI_MEM_TYPE_VRAM, &total) == AMDSMI_STATUS_SUCCESS)
+                        v[12] = (long long)total;
+                    if (amdsmi_get_gpu_memory_usage(target_, AMDSMI_MEM_TYPE_VRAM, &used) == AMDSMI_STATUS_SUCCESS)
+                        v[13] = (long long)used;
+                }
+
+                {
+                    int64_t rpm=-1;
+                    if (amdsmi_get_gpu_fan_rpms(target_, 0, &rpm) == AMDSMI_STATUS_SUCCESS) v[14] = (long long)rpm;
+                }
+
+                {
+                    amdsmi_pcie_info_t p{};
+                    if (amdsmi_get_pcie_info(target_, &p) == AMDSMI_STATUS_SUCCESS) {
+                        v[15] = p.pcie_metric.pcie_width;
+                        v[16] = p.pcie_metric.pcie_speed;       // 0.1 GT/s
+                        v[17] = p.pcie_metric.pcie_bandwidth;   // Mbps
+                    }
+                }
+
+                {
+                    amdsmi_gpu_metrics_t g{};
+                    if (amdsmi_get_gpu_metrics_info(target_, &g) == AMDSMI_STATUS_SUCCESS) {
+                        v[18] = (long long)g.throttle_status;
+                        v[19] = (long long)g.indep_throttle_status;
+                        v[20] = (long long)g.prochot_residency_acc;
+                        v[21] = (long long)g.ppt_residency_acc;
+                        v[22] = (long long)g.socket_thm_residency_acc;
+                        v[23] = (long long)g.vr_thm_residency_acc;
+                        v[24] = (long long)g.hbm_thm_residency_acc;
+                        v[25] = (long long)g.accumulation_counter;
+                    }
+                }
+
+                fprintf(csv, "%.6f", t);
+                for (auto x : v) fprintf(csv, ",%lld", x);
+                fprintf(csv, "\n"); fflush(csv);
+
+                fprintf(stdout, "Time %.3f | Tedge=%lldC GfxAct=%lld%% Pavg=%lldW VRAM %lld/%lld MB\n",
+                        t, v[0], v[3], v[6], (v[13]>>20), (v[12]>>20));
+
+                std::this_thread::sleep_for(std::chrono::microseconds(interval_us));
+            }
+        });
+
+        return true;
+    }
+
+    void stop() override {
+        stop_.store(true, std::memory_order_relaxed);
+        if (th_.joinable()) th_.join();
+        amdsmi_shut_down();
+    }
+};
+
+// =============== Modes ==============================
+enum class MonitorMode { Papi, Amd, Help, Unknown };
+enum class ComputeMode { Custom, Rocblas, Unknown };
+
+static MonitorMode parse_monitor(const std::string& s) {
+    if (s == "papi") return MonitorMode::Papi;
+    if (s == "amd")  return MonitorMode::Amd;
+    if (s == "help") return MonitorMode::Help;
+    return MonitorMode::Unknown;
+}
+static ComputeMode parse_compute(const std::string& s) {
+    if (s == "rocblas") return ComputeMode::Rocblas;
+    if (s == "cus" || s == "custom" || s == "naive") return ComputeMode::Custom;
+    return ComputeMode::Unknown;
+}
+
+// Parse device from any later arg: either "--device N" or a bare integer.
+// Leaves your changed "hipSetDevice(1)" line untouched.
+static bool is_integer(const std::string& s) {
+    if (s.empty()) return false;
+    size_t i = (s[0]=='+'||s[0]=='-') ? 1 : 0;
+    if (i>=s.size()) return false;
+    for (; i<s.size(); ++i) if (s[i]<'0'||s[i]>'9') return false;
+    return true;
+}
+static bool parse_device_arg(int argc, char** argv, int& out_dev) {
+    for (int i=2; i<argc; ++i) {
+        std::string a = argv[i];
+        if (a == "--device" && i+1<argc) { out_dev = std::atoi(argv[i+1]); return true; }
+        if (a=="papi"||a=="amd"||a=="help"||a=="rocblas"||a=="cus"||a=="custom"||a=="naive") continue;
+        if (is_integer(a)) { out_dev = std::atoi(a.c_str()); return true; }
+    }
+    return false;
+}
+
+static Monitor* make_monitor(MonitorMode m) {
+    switch (m) {
+        case MonitorMode::Papi: return new PapiMonitor();
+        case MonitorMode::Amd:  return new AmdSmiMonitor();
+        default: return nullptr;
     }
 }
 
-// ----------------- GPU DGEMM (row-major) -----------------
-class GpuRowDgemm : public IDgemm {
-  double *dA=nullptr, *dB=nullptr, *dC=nullptr;
-public:
-  void initialize(size_t m, size_t n, size_t k) override {
-    M=m; N=n; K=k;
-    h_A.resize(M*K);
-    h_B.resize(K*N);
-    h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100); // double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100); //double(rand())/RAND_MAX;  // fixed '<'
-  }
-  void run() override {
-    // allocate & copy on first run (lazy allocate)
-    if (!dA) {
-      HIP_CHECK(hipMalloc(&dA, M*K*sizeof(double)));
-      HIP_CHECK(hipMalloc(&dB, K*N*sizeof(double)));
-      HIP_CHECK(hipMalloc(&dC, M*N*sizeof(double)));
-      HIP_CHECK(hipMemcpy(dA, h_A.data(), M*K*sizeof(double), hipMemcpyHostToDevice));
-      HIP_CHECK(hipMemcpy(dB, h_B.data(), K*N*sizeof(double), hipMemcpyHostToDevice));
-      HIP_CHECK(hipMemset(dC, 0, M*N*sizeof(double)));
-    }
-    const double alpha=0.75, beta=0.5;  // match gemm.cpp
+// =============== Compute helpers ====================
+// Your original compute path (unchanged)
+static void do_custom_dgemm(hipStream_t stream, const double* dA, const double* dB, double* dC,
+                            int M, int N, int K, double alpha, double beta)
+{
     dim3 block(32,32);
-    dim3 grid((N+block.x-1)/block.x, (M+block.y-1)/block.y);
-    hipLaunchKernelGGL(dgemm_kernel_rowmajor, grid, block, 0, 0,
-                       dA, dB, dC, (int)M, (int)N, (int)K, alpha, beta);
-    HIP_CHECK(hipDeviceSynchronize());
-  }
-  void report(double t) const override {
-    double gflops = (2.0*M*N*K)/(t*1e9);
-    std::cout<<"Implementation: GPU Row-Major DGEMM (gemm.cpp logic)\n"
-             <<"  Dimensions: M="<<M<<", N="<<N<<", K="<<K<<"\n"
-             <<"  Execution Time: "<<std::fixed<<std::setprecision(6)<<t<<" s\n"
-             <<"  Performance: "<<std::setprecision(2)<<gflops<<" GFLOPS\n";
-  }
-  void cleanup() override {
-    if (dA) hipFree(dA);
-    if (dB) hipFree(dB);
-    if (dC) hipFree(dC);
-    dA=dB=dC=nullptr; h_A.clear(); h_B.clear(); h_C.clear();
-  }
-};
+    dim3 grid((N + block.x - 1)/block.x,
+              (M + block.y - 1)/block.y);
+    hipLaunchKernelGGL(dgemm_kernel, grid, block, 0, stream,
+                       dA, dB, dC, M, N, K, alpha, beta);
+}
 
-// ----------------- GPU DGEMM (col-major) -----------------
-class GpuColDgemm : public IDgemm {
-  double *dA=nullptr, *dB=nullptr, *dC=nullptr;
-public:
-  void initialize(size_t m, size_t n, size_t k) override {
-    M=m; N=n; K=k;
-    h_A.resize(M*K);
-    h_B.resize(K*N);
-    h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100); // double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100); //double(rand())/RAND_MAX;
-  }
-  void run() override {
-    if (!dA) {
-      HIP_CHECK(hipMalloc(&dA, M*K*sizeof(double)));
-      HIP_CHECK(hipMalloc(&dB, K*N*sizeof(double)));
-      HIP_CHECK(hipMalloc(&dC, M*N*sizeof(double)));
-      HIP_CHECK(hipMemcpy(dA, h_A.data(), M*K*sizeof(double), hipMemcpyHostToDevice));
-      HIP_CHECK(hipMemcpy(dB, h_B.data(), K*N*sizeof(double), hipMemcpyHostToDevice));
-      HIP_CHECK(hipMemset(dC, 0, M*N*sizeof(double)));
+// rocBLAS DGEMM that matches your row-major semantics without touching your data.
+// We compute (C^T) = (B^T) * (A^T) with column-major rocBLAS.
+static bool do_rocblas_dgemm(rocblas_handle handle, hipStream_t stream,
+                             const double* dA, const double* dB, double* dC,
+                             int M, int N, int K, double alpha, double beta)
+{
+    rocblas_status rs = rocblas_set_pointer_mode(handle, rocblas_pointer_mode_host);
+    if (rs != rocblas_status_success) { fprintf(stderr, "rocBLAS set_pointer_mode failed (%d)\n", (int)rs); return false; }
+    rs = rocblas_set_stream(handle, stream);
+    if (rs != rocblas_status_success) { fprintf(stderr, "rocBLAS set_stream failed (%d)\n", (int)rs); return false; }
+
+    const int m_prime = N;            // rows of C^T
+    const int n_prime = M;            // cols of C^T
+    const int k_prime = K;
+
+    const int lda = m_prime;          // A' = B^T has shape (N x K)
+    const int ldb = k_prime;          // B' = A^T has shape (K x M)
+    const int ldc = m_prime;          // C' = C^T has shape (N x M)
+
+    rs = rocblas_dgemm(handle,
+                       rocblas_operation_none,   // A' not transposed (already B^T in memory)
+                       rocblas_operation_none,   // B' not transposed (already A^T in memory)
+                       m_prime, n_prime, k_prime,
+                       &alpha,
+                       dB, lda,    // A' points at B buffer
+                       dA, ldb,    // B' points at A buffer
+                       &beta,
+                       dC, ldc);   // C' is C buffer (interpreted as column-major transpose)
+    if (rs != rocblas_status_success) {
+        fprintf(stderr, "rocBLAS dgemm failed (%d)\n", (int)rs);
+        return false;
     }
-    const double alpha=0.75, beta=0.5;  // match gemm.cpp
-    dim3 block(32,32);
-    dim3 grid((N+block.x-1)/block.x, (M+block.y-1)/block.y);
-    hipLaunchKernelGGL(dgemm_kernel_colmajor, grid, block, 0, 0,
-                       dA, dB, dC, (int)M, (int)N, (int)K, alpha, beta);
-    HIP_CHECK(hipDeviceSynchronize());
-  }
-  void report(double t) const override {
-    double gflops = (2.0*M*N*K)/(t*1e9);
-    std::cout<<"Implementation: GPU Col-Major DGEMM (gemm.cpp logic)\n"
-             <<"  Dimensions: M="<<M<<", N="<<N<<", K="<<K<<"\n"
-             <<"  Execution Time: "<<std::fixed<<std::setprecision(6)<<t<<" s\n"
-             <<"  Performance: "<<std::setprecision(2)<<gflops<<" GFLOPS\n";
-  }
-  void cleanup() override {
-    if (dA) hipFree(dA);
-    if (dB) hipFree(dB);
-    if (dC) hipFree(dC);
-    dA=dB=dC=nullptr; h_A.clear(); h_B.clear(); h_C.clear();
-  }
-};
+    return true;
+}
 
-// ----------------- GPU DGEMM (rocBLAS) -----------------
-class RocblasDgemm : public IDgemm {
-  double *d_A=nullptr, *d_B=nullptr, *d_C=nullptr;
-  rocblas_handle handle=nullptr;
-public:
-  void initialize(size_t m, size_t n, size_t k) override {
-    M=m; N=n; K=k;
-    h_A.resize(M*K); h_B.resize(K*N); h_C.assign(M*N, 0.0);
-    for (size_t i=0;i<M*K;++i) h_A[i] = (double)(i % 100); //double(rand())/RAND_MAX;
-    for (size_t i=0;i<K*N;++i) h_B[i] = (double)(i % 100); //double(rand())/RAND_MAX;
-    ROCBLAS_CHECK(rocblas_create_handle(&handle));
-    HIP_CHECK(hipMalloc(&d_A, M*K*sizeof(double)));
-    HIP_CHECK(hipMalloc(&d_B, K*N*sizeof(double)));
-    HIP_CHECK(hipMalloc(&d_C, M*N*sizeof(double)));
-    HIP_CHECK(hipMemcpy(d_A, h_A.data(), M*K*sizeof(double), hipMemcpyHostToDevice));
-    HIP_CHECK(hipMemcpy(d_B, h_B.data(), K*N*sizeof(double), hipMemcpyHostToDevice));
-    HIP_CHECK(hipMemset(d_C, 0, M*N*sizeof(double)));
-  }
-  void run() override {
-    const double alpha=1.0, beta=0.0;
-    // rocBLAS is column-major; A(MxK), B(KxN), C(MxN), lda=M, ldb=K, ldc=M
-    ROCBLAS_CHECK(rocblas_dgemm(handle,
-                                rocblas_operation_none, rocblas_operation_none,
-                                (int)M, (int)N, (int)K,
-                                &alpha,
-                                d_A, (int)M,
-                                d_B, (int)K,
-                                &beta,
-                                d_C, (int)M));
-    HIP_CHECK(hipDeviceSynchronize());
-  }
-  void report(double t) const override {
-    double gflops = (2.0*M*N*K)/(t*1e9);
-    std::cout<<"Implementation: rocBLAS GPU DGEMM\n"
-             <<"  Dimensions: M="<<M<<", N="<<N<<", K="<<K<<"\n"
-             <<"  Execution Time: "<<std::fixed<<std::setprecision(6)<<t<<" s\n"
-             <<"  Performance: "<<std::setprecision(2)<<gflops<<" GFLOPS\n";
-  }
-  void cleanup() override {
-    if (d_A) hipFree(d_A);
-    if (d_B) hipFree(d_B);
-    if (d_C) hipFree(d_C);
-    if (handle) rocblas_destroy_handle(handle);
-    d_A=d_B=d_C=nullptr; handle=nullptr;
-    h_A.clear(); h_B.clear(); h_C.clear();
-  }
-};
-
-// ----------------- Monitors -----------------
-class PapiMonitor : public IPerfMonitor {
-  int EventSet = PAPI_NULL;
-  std::vector<const char*> ev;
-  std::atomic<bool> stopFlag{false};
-  std::thread thr;
-  FILE* csv=nullptr;
-public:
-  PapiMonitor(){
-    if (PAPI_library_init(PAPI_VER_CURRENT) != PAPI_VER_CURRENT)
-      throw std::runtime_error("PAPI_library_init failed");
-    if (PAPI_create_eventset(&EventSet) != PAPI_OK)
-      throw std::runtime_error("PAPI_create_eventset failed");
-
-    // Named events via ROCm SMI component (device 0)
-    ev = {
-      "rocm_smi:::temp_current:device=0:sensor=1",   // edge
-      "rocm_smi:::temp_current:device=0:sensor=2",   // hotspot
-      "rocm_smi:::mem_usage_VRAM:device=0",          // bytes
-      "rocm_smi:::busy_percent:device=0",            // %
-      "rocm_smi:::memory_busy_percent:device=0"      // %
-    };
-    for (auto* e : ev) {
-      int rc = PAPI_add_named_event(EventSet, e);
-      if (rc != PAPI_OK)
-        throw std::runtime_error(std::string("PAPI_add_named_event failed: ") + e);
+// ==================== Main ==========================
+int main(int argc, char** argv)
+{
+    if (argc < 3) { usage(argv[0]); return 1; }
+    MonitorMode mon_mode = parse_monitor(argv[1]);
+    ComputeMode cmp_mode = parse_compute(argv[2]);
+    if (mon_mode == MonitorMode::Help || mon_mode == MonitorMode::Unknown || cmp_mode == ComputeMode::Unknown) {
+        usage(argv[0]); return (mon_mode==MonitorMode::Help?0:1);
     }
-  }
-  void start() override {
-    if (PAPI_start(EventSet) != PAPI_OK)
-      throw std::runtime_error("PAPI_start failed");
-    std::string fname = "gemm_" + name + ".csv";
-    csv = fopen(fname.c_str(), "w");
-    if (!csv) throw std::runtime_error("cannot open CSV for PAPI");
-    fprintf(csv, "timestamp");
-    for (auto* e: ev) fprintf(csv, ",%s", e);
-    fprintf(csv, ",CLI_power_W\n"); fflush(csv);
-    gettimeofday(&start_time, nullptr);
-    stopFlag=false;
-    thr = std::thread([this]{ loop(); });
-  }
-  void loop(){
-    while (!stopFlag.load()){
-      long long v[5]={0,0,0,0,0};
-      if (PAPI_read(EventSet, v) != PAPI_OK){
-        fprintf(stderr, "PAPI_read failed\n");
-        break;
-      }
-      timeval now{}; gettimeofday(&now, nullptr);
-      double t = (now.tv_sec - start_time.tv_sec) + (now.tv_usec - start_time.tv_usec)/1e6;
 
-      // optional power via CLI (best-effort)
-      int powerW = -1;
-      FILE* fp = popen("amd-smi metric -g 0 -p --csv", "r");
-      if (fp){
-        char buf[256]; bool header=false;
-        while (fgets(buf,sizeof(buf),fp)){
-          if (!header && strstr(buf,"gpu")) { header=true; continue; }
-          if (header){
-            int gid=0, p=0;
-            // heuristic: GPU,Power(W),...
-            if (sscanf(buf, "%d,%d", &gid, &p) >= 2) { powerW=p; }
-            break;
-          }
+    int device_index = DEFAULT_DEVICE;
+    parse_device_arg(argc, argv, device_index);
+
+    // HIP device select — left IDENTICAL to your edited file.
+    ///////////////////////////////////////
+    ///////////////////////////////////////
+        ///////////////////////////////////////
+    ///////////////////////////////////////
+        ///////////////////////////////////////
+    ///////////////////////////////////////
+        ///////////////////////////////////////
+    ///////////////////////////////////////
+        ///////////////////////////////////////
+    ///////////////////////////////////////
+        ///////////////////////////////////////
+    ///////////////////////////////////////
+        ///////////////////////////////////////
+    ///////////////////////////////////////
+
+    hipError_t hst = hipSetDevice(1);
+    if (hst != hipSuccess) {
+        fprintf(stderr, "hipSetDevice(%d) failed: %s\n", device_index, hipGetErrorString(hst));
+        return 1;
+    }
+    hipDeviceProp_t prop{};
+    if (hipGetDeviceProperties(&prop, device_index) == hipSuccess) {
+        printf("HIP Using Device %d: %s | CUs=%d | MaxThreadsPerBlock=%d\n",
+               device_index, prop.name, prop.multiProcessorCount, prop.maxThreadsPerBlock);
+    }
+
+    // Host alloc
+    size_t size_A = (size_t)M_DIM * K_DIM * sizeof(double);
+    size_t size_B = (size_t)K_DIM * N_DIM * sizeof(double);
+    size_t size_C = (size_t)M_DIM * N_DIM * sizeof(double);
+
+    double *h_A=nullptr, *h_B=nullptr, *h_C=nullptr;
+    hipHostMalloc(&h_A, size_A, hipHostMallocDefault);
+    hipHostMalloc(&h_B, size_B, hipHostMallocDefault);
+    hipHostMalloc(&h_C, size_C, hipHostMallocDefault);
+    if (!h_A || !h_B || !h_C) {
+        fprintf(stderr, "Host allocation failed\n"); return 1;
+    }
+
+    for (size_t i=0;i<(size_t)M_DIM*K_DIM;++i) h_A[i] = (double)(i%100);
+    for (size_t i=0;i<(size_t)K_DIM*N_DIM;++i) h_B[i] = (double)(i%100);
+    for (size_t i=0;i<(size_t)M_DIM*N_DIM;++i) h_C[i] = 0.0;
+
+    // Device alloc + streams
+    double *d_A[NUM_STREAMS], *d_B[NUM_STREAMS], *d_C[NUM_STREAMS];
+    hipStream_t streams[NUM_STREAMS];
+    hipEvent_t  events[NUM_STREAMS];
+
+    // NEW: timing events per stream (to compute GFLOPS)
+    hipEvent_t kstart[NUM_STREAMS], kstop[NUM_STREAMS];
+
+    for (int s=0;s<NUM_STREAMS;++s) {
+        if (hipMalloc(&d_A[s], size_A) != hipSuccess) { fprintf(stderr,"hipMalloc d_A[%d]\n",s); return 1; }
+        if (hipMalloc(&d_B[s], size_B) != hipSuccess) { fprintf(stderr,"hipMalloc d_B[%d]\n",s); return 1; }
+        if (hipMalloc(&d_C[s], size_C) != hipSuccess) { fprintf(stderr,"hipMalloc d_C[%d]\n",s); return 1; }
+        if (hipStreamCreateWithFlags(&streams[s], hipStreamNonBlocking) != hipSuccess) { fprintf(stderr,"hipStreamCreate\n"); return 1; }
+        if (hipEventCreate(&events[s]) != hipSuccess) { fprintf(stderr,"hipEventCreate\n"); return 1; }
+
+        // create timing events
+        if (hipEventCreate(&kstart[s]) != hipSuccess) { fprintf(stderr,"hipEventCreate kstart\n"); return 1; }
+        if (hipEventCreate(&kstop[s])  != hipSuccess) { fprintf(stderr,"hipEventCreate kstop\n");  return 1; }
+    }
+
+    // H2D copies
+    for (int s=0;s<NUM_STREAMS;++s) {
+        if (hipMemcpyAsync(d_A[s], h_A, size_A, hipMemcpyHostToDevice, streams[s]) != hipSuccess) { fprintf(stderr,"H2D A\n"); return 1; }
+        if (hipMemcpyAsync(d_B[s], h_B, size_B, hipMemcpyHostToDevice, streams[s]) != hipSuccess) { fprintf(stderr,"H2D B\n"); return 1; }
+        if (hipMemcpyAsync(d_C[s], h_C, size_C, hipMemcpyHostToDevice, streams[s]) != hipSuccess) { fprintf(stderr,"H2D C\n"); return 1; }
+    }
+    for (int s=0;s<NUM_STREAMS;++s) hipStreamSynchronize(streams[s]);
+
+    // CSV file
+    const char* outname = (mon_mode==MonitorMode::Papi? "gemm_monitor_papi.csv":"gemm_monitor_amdsmi.csv");
+    FILE* csv = fopen(outname, "w");
+    if (!csv) { fprintf(stderr, "Failed to open %s\n", outname); return 1; }
+
+    // Start monitor
+    std::unique_ptr<Monitor> mon(make_monitor(mon_mode));
+    if (!mon) { fclose(csv); return 1; }
+    if (!mon->start(csv, device_index, DEFAULT_MONITOR_US)) {
+        fprintf(stderr, "Failed to start monitor\n");
+        fclose(csv);
+        return 1;
+    }
+
+    // Compute selection
+    const double alpha = 0.75, beta = 0.5;
+    rocblas_handle handle = nullptr;
+    if (cmp_mode == ComputeMode::Rocblas) {
+        if (rocblas_create_handle(&handle) != rocblas_status_success) {
+            fprintf(stderr, "rocBLAS create_handle failed\n");
+            mon->stop(); fclose(csv); return 1;
         }
-        pclose(fp);
-      }
-
-      fprintf(csv, "%.6f,%lld,%lld,%lld,%lld,%lld,%d\n", t, v[0],v[1],v[2],v[3],v[4], powerW);
-      fflush(csv);
-      if (printEnabled){
-        std::cout<<std::fixed<<std::setprecision(3)
-                 <<"t="<<t<<"s | Edge "<<v[0]<<" mC, Hot "<<v[1]
-                 <<" mC, VRAM "<<v[2]<<", GPU "<<v[3]<<"%, MEM "<<v[4]
-                 <<"%, Pwr "<<powerW<<" W\n";
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-  }
-  void stop() override {
-    stopFlag=true;
-    if (thr.joinable()) thr.join();
-    PAPI_stop(EventSet, nullptr);
-    PAPI_cleanup_eventset(EventSet);
-    PAPI_destroy_eventset(&EventSet);
-    if (csv) fclose(csv);
-  }
-  void report() const override {
-    std::cout<<"Performance data saved to gemm_"<<name<<".csv\n";
-  }
-};
 
-class AmdSmiMonitor : public IPerfMonitor {
-  amdsmi_processor_handle h = nullptr;
-  std::atomic<bool> stopFlag{false};
-  std::thread thr;
-  FILE* csv=nullptr;
-public:
-  AmdSmiMonitor(){
-    if (amdsmi_init(AMDSMI_INIT_AMD_GPUS) != AMDSMI_STATUS_SUCCESS)
-      throw std::runtime_error("amdsmi_init failed");
+    // FLOPs for DGEMM
+    const double FLOP_COUNT = 2.0 * (double)M_DIM * (double)N_DIM * (double)K_DIM;
+    double total_ms = 0.0;
+    int total_calls = 0;
 
-    // first socket / first GPU
-    uint32_t sock_cnt=0;
-    if (amdsmi_get_socket_handles(&sock_cnt,nullptr) != AMDSMI_STATUS_SUCCESS || sock_cnt==0)
-      throw std::runtime_error("no AMD GPU sockets");
-    std::vector<amdsmi_socket_handle> socks(sock_cnt);
-    amdsmi_get_socket_handles(&sock_cnt,socks.data());
+    // Launch compute (kept identical structure/timing, just bracketing with events)
+    for (int iter=0; iter<ITERATIONS_PER_STREAM; ++iter) {
+        for (int s=0; s<NUM_STREAMS; ++s) {
+            hipEventRecord(kstart[s], streams[s]);  // start timing
 
-    uint32_t proc_cnt=0;
-    if (amdsmi_get_processor_handles(socks[0], &proc_cnt, nullptr) != AMDSMI_STATUS_SUCCESS || proc_cnt==0)
-      throw std::runtime_error("no AMD GPU processors");
-    std::vector<amdsmi_processor_handle> procs(proc_cnt);
-    amdsmi_get_processor_handles(socks[0], &proc_cnt, procs.data());
-
-    for (auto ph: procs){
-      processor_type_t pt;
-      if (amdsmi_get_processor_type(ph, &pt)==AMDSMI_STATUS_SUCCESS &&
-          pt==AMDSMI_PROCESSOR_TYPE_AMD_GPU){ h=ph; break; }
-    }
-    if (!h) throw std::runtime_error("failed to get GPU handle");
-  }
-  void start() override {
-    std::string fname = "gemm_" + name + ".csv";
-    csv = fopen(fname.c_str(), "w");
-    if (!csv) throw std::runtime_error("cannot open CSV for AMD SMI");
-    fprintf(csv, "timestamp,Temp_Edge_mC,Temp_Hotspot_mC,GfxActivity_%%,UmcActivity_%%,VramTotal_B,VramUsed_B,AvgSocketPower_W,CurrentSocketPower_W\n");
-    fflush(csv);
-    gettimeofday(&start_time, nullptr);
-    stopFlag=false;
-    thr = std::thread([this]{ loop(); });
-  }
-  void loop(){
-    while (!stopFlag.load()){
-      timeval now{}; gettimeofday(&now,nullptr);
-      double t = (now.tv_sec - start_time.tv_sec) + (now.tv_usec - start_time.tv_usec)/1e6;
-
-      int64_t edge=-1, hot=-1;
-      amdsmi_get_temp_metric(h, AMDSMI_TEMPERATURE_TYPE_EDGE, AMDSMI_TEMP_CURRENT, &edge);
-      amdsmi_get_temp_metric(h, AMDSMI_TEMPERATURE_TYPE_HOTSPOT, AMDSMI_TEMP_CURRENT, &hot);
-
-      amdsmi_engine_usage_t act{};
-      long long gfx=-1, umc=-1;
-      if (amdsmi_get_gpu_activity(h,&act)==AMDSMI_STATUS_SUCCESS){
-        gfx = (long long)act.gfx_activity;
-        umc = (long long)act.umc_activity;
-      }
-
-      uint64_t vtot=0, vused=0;
-      long long Ltot=-1, Lused=-1;
-      if (amdsmi_get_gpu_memory_total(h, AMDSMI_MEM_TYPE_VRAM, &vtot)==AMDSMI_STATUS_SUCCESS) Ltot=(long long)vtot;
-      if (amdsmi_get_gpu_memory_usage(h, AMDSMI_MEM_TYPE_VRAM, &vused)==AMDSMI_STATUS_SUCCESS) Lused=(long long)vused;
-
-      amdsmi_power_info_t pinfo{};
-      long long pavg=-1, pcurr=-1;
-      if (amdsmi_get_power_info(h,&pinfo)==AMDSMI_STATUS_SUCCESS){
-        pavg = (long long)pinfo.average_socket_power;
-        pcurr= (long long)pinfo.current_socket_power;
-      }
-
-      fprintf(csv,"%.6f,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld\n",
-              t,(long long)edge,(long long)hot,gfx,umc,Ltot,Lused,pavg,pcurr);
-      fflush(csv);
-      if (printEnabled){
-        std::cout<<std::fixed<<std::setprecision(3)
-                 <<"t="<<t<<"s | Edge "<<edge<<" mC, Hot "<<hot
-                 <<" mC, GFX "<<gfx<<" %, UMC "<<umc<<" %, Pwr "<<pcurr<<" W\n";
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-  }
-  void stop() override {
-    stopFlag=true;
-    if (thr.joinable()) thr.join();
-    amdsmi_shut_down();
-    if (csv) fclose(csv);
-  }
-  void report() const override {
-    std::cout<<"Performance data saved to gemm_"<<name<<".csv\n";
-  }
-};
-
-class RocmSmiMonitor : public IPerfMonitor {
-  uint32_t dev=0;
-  std::atomic<bool> stopFlag{false};
-  std::thread thr;
-  FILE* csv=nullptr;
-public:
-  RocmSmiMonitor(){
-    if (rsmi_init(0) != RSMI_STATUS_SUCCESS)
-      throw std::runtime_error("rsmi_init failed");
-  }
-  ~RocmSmiMonitor(){ rsmi_shut_down(); }
-  void start() override {
-    std::string fname = "gemm_" + name + ".csv";
-    csv = fopen(fname.c_str(),"w");
-    if (!csv) throw std::runtime_error("cannot open CSV for ROCm SMI");
-    fprintf(csv, "timestamp,GPUUtil_%%,Power_W,Temp_Edge_mC\n"); fflush(csv);
-    gettimeofday(&start_time,nullptr);
-    stopFlag=false;
-    thr = std::thread([this]{ loop(); });
-  }
-  void loop(){
-    while (!stopFlag.load()){
-      timeval now{}; gettimeofday(&now,nullptr);
-      double t = (now.tv_sec - start_time.tv_sec) + (now.tv_usec - start_time.tv_usec)/1e6;
-
-      uint32_t busy=0; if (rsmi_dev_busy_percent_get(dev,&busy)!=RSMI_STATUS_SUCCESS) busy=UINT32_MAX;
-      uint64_t p_uW=0; long long pW=-1;
-      if (rsmi_dev_power_ave_get(dev,0,&p_uW)==RSMI_STATUS_SUCCESS) pW = (long long)(p_uW/1000000.0);
-      int64_t edge=0; long long edge_mc=-1;
-      if (rsmi_dev_temp_metric_get(dev,RSMI_TEMP_TYPE_EDGE,RSMI_TEMP_CURRENT,&edge)==RSMI_STATUS_SUCCESS) edge_mc=edge;
-
-      fprintf(csv,"%.6f,%u,%lld,%lld\n", t, busy, pW, edge_mc);
-      fflush(csv);
-      if (printEnabled){
-        std::cout<<std::fixed<<std::setprecision(3)
-                 <<"t="<<t<<"s | Util "<<(busy==UINT32_MAX?-1:(int)busy)<<" %, "
-                 <<"Pwr "<<pW<<" W, Edge "<<edge_mc<<" mC\n";
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    }
-  }
-  void stop() override {
-    stopFlag=true;
-    if (thr.joinable()) thr.join();
-    if (csv) fclose(csv);
-  }
-  void report() const override {
-    std::cout<<"Performance data saved to gemm_"<<name<<".csv\n";
-  }
-};
-
-class CliMonitor : public IPerfMonitor {
-  std::atomic<bool> stopFlag{false};
-  std::thread thr;
-  FILE* csv=nullptr;
-public:
-  void start() override {
-    std::string fname = "gemm_" + name + ".csv";
-    csv = fopen(fname.c_str(),"w");
-    if (!csv) throw std::runtime_error("cannot open CSV for CLI");
-    fprintf(csv, "timestamp,GPU_Temp_mC,GPU_Power_W\n"); fflush(csv);
-    gettimeofday(&start_time,nullptr);
-    stopFlag=false;
-    thr = std::thread([this]{ loop(); });
-  }
-  void loop(){
-    while (!stopFlag.load()){
-      timeval now{}; gettimeofday(&now,nullptr);
-      double t = (now.tv_sec - start_time.tv_sec) + (now.tv_usec - start_time.tv_usec)/1e6;
-
-      int temp_mC = -1, pwr_W = -1;
-      FILE* fp = popen("amd-smi --showtemp --showpower --csv", "r");
-      if (fp){
-        char buf[256]; bool header=false;
-        while (fgets(buf,sizeof(buf),fp)){
-          if (!header && strstr(buf,"GPU")!=nullptr){ header=true; continue; }
-          if (header){
-            int gid=0; double tc=0.0, pw=0.0;
-            if (sscanf(buf, "%d, %lf, %lf", &gid, &tc, &pw)==3){
-              temp_mC = (int)std::lround(tc*1000.0);
-              pwr_W   = (int)std::lround(pw);
+            if (cmp_mode == ComputeMode::Custom) {
+                do_custom_dgemm(streams[s], d_A[s], d_B[s], d_C[s], M_DIM, N_DIM, K_DIM, alpha, beta);
+            } else {
+                if (!do_rocblas_dgemm(handle, streams[s], d_A[s], d_B[s], d_C[s], M_DIM, N_DIM, K_DIM, alpha, beta)) {
+                    fprintf(stderr, "rocBLAS compute failed\n");
+                    if (handle) rocblas_destroy_handle(handle);
+                    mon->stop(); fclose(csv); return 1;
+                }
             }
-            break;
-          }
+
+            hipEventRecord(kstop[s], streams[s]);   // stop timing
+            hipEventRecord(events[s], streams[s]);  // your original event
+            hipStreamSynchronize(streams[s]);       // wait
+
+            float ms = 0.0f;
+            hipEventElapsedTime(&ms, kstart[s], kstop[s]);
+
+            double secs = ms / 1000.0;
+            double gflops = (FLOP_COUNT / 1e9) / secs;
+            double tflops = gflops / 1000.0;
+
+            printf("DGEMM[%s] time: %.3f ms  ->  %.3f GFLOPS  (%.3f TFLOPS)\n",
+                   (cmp_mode == ComputeMode::Custom ? "cus" : "rocblas"),
+                   ms, gflops, tflops);
+
+            total_ms += ms;
+            total_calls += 1;
+
+            usleep(3000000); // match your pacing
         }
-        pclose(fp);
-      }
-
-      fprintf(csv,"%.6f,%d,%d\n", t, temp_mC, pwr_W);
-      fflush(csv);
-      if (printEnabled){
-        std::cout<<std::fixed<<std::setprecision(3)
-                 <<"t="<<t<<"s | Temp "<<temp_mC<<" mC, Pwr "<<pwr_W<<" W\n";
-      }
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
-  }
-  void stop() override {
-    stopFlag=true;
-    if (thr.joinable()) thr.join();
-    if (csv) fclose(csv);
-  }
-  void report() const override {
-    std::cout<<"Performance data saved to gemm_"<<name<<".csv\n";
-  }
-};
+    hipStreamSynchronize(streams[0]);
 
-// ----------------- Factories -----------------
-class DgemmFactory {
-public:
-  static std::unique_ptr<IDgemm> create(const std::string& t){
-    if (t=="row")      return std::make_unique<GpuRowDgemm>();       // GPU (row-major kernel)
-    if (t=="col")      return std::make_unique<GpuColDgemm>();       // GPU (col-major kernel)
-    if (t=="rocblas")  return std::make_unique<RocblasDgemm>();      // GPU (lib)
-    if (t=="row-cpu")  return std::make_unique<RowMajorCpu>();       // optional CPU
-    if (t=="col-cpu")  return std::make_unique<ColumnMajorCpu>();    // optional CPU
-    throw std::invalid_argument("unknown implementation: "+t);
-  }
-};
-
-class PerfMonitorFactory {
-public:
-  static std::unique_ptr<IPerfMonitor> create(const std::string& t){
-    if (t=="papi") return std::make_unique<PapiMonitor>();
-    if (t=="amd")  return std::make_unique<AmdSmiMonitor>();
-    if (t=="rocm") return std::make_unique<RocmSmiMonitor>();
-    if (t=="cli")  return std::make_unique<CliMonitor>();
-    throw std::invalid_argument("unknown monitor: "+t);
-  }
-};
-
-// ----------------- Main -----------------
-int main(int argc, char** argv){
-  auto usage = [&](const char* p){
-    std::cerr<<"Usage: "<<p<<" <implementation> <monitor> [M N K] [--print]\n"
-             <<"  <implementation>: 'row', 'col', 'rocblas'   (GPU)\n"
-             <<"                    also: 'row-cpu', 'col-cpu' (CPU reference)\n"
-             <<"  <monitor>:        'papi', 'amd', 'rocm', 'cli'\n"
-             <<"  [M N K]:          optional matrix dims (default: 14592 14592 65536)\n"
-             <<"  [--print]:        live-print samples while logging CSV\n";
-  };
-  if (argc < 3){ usage(argv[0]); return 1; }
-
-  bool live=false;
-  if (std::string(argv[argc-1])=="--print"){ live=true; --argc; }
-
-  std::string impl = argv[1];
-  std::string mon  = argv[2];
-
-  size_t M=14592, N=14592, K=65536;  // keep large defaults to match your runs
-  if (argc > 3){
-    if (argc != 6){
-      std::cerr<<"Error: provide all 3 dims (M N K) or none.\n";
-      usage(argv[0]); return 1;
+    if (total_calls > 0) {
+        double avg_ms = total_ms / (double)total_calls;
+        double avg_secs = avg_ms / 1000.0;
+        double avg_gflops = (FLOP_COUNT / 1e9) / avg_secs;
+        double avg_tflops = avg_gflops / 1000.0;
+        printf("DGEMM avg over %d call(s): %.3f ms  ->  %.3f GFLOPS  (%.3f TFLOPS)\n",
+               total_calls, avg_ms, avg_gflops, avg_tflops);
     }
-    try {
-      M = std::stoull(argv[3]);
-      N = std::stoull(argv[4]);
-      K = std::stoull(argv[5]);
-    } catch (...) {
-      std::cerr<<"Invalid dimensions.\n"; return 1;
+
+    if (handle) rocblas_destroy_handle(handle);
+
+    // Stop monitor & cleanup
+    mon->stop();
+    fclose(csv);
+
+    for (int s=0;s<NUM_STREAMS;++s) {
+        hipEventDestroy(kstart[s]);
+        hipEventDestroy(kstop[s]);
+        hipEventDestroy(events[s]);
+        hipStreamDestroy(streams[s]);
+        hipFree(d_A[s]); hipFree(d_B[s]); hipFree(d_C[s]);
     }
-  }
+    hipHostFree(h_A); hipHostFree(h_B); hipHostFree(h_C);
 
-  std::cout<<"Configuration:\n"
-           <<"  Implementation: "<<impl<<"\n"
-           <<"  Monitor: "<<mon<<"\n"
-           <<"  Dimensions: M="<<M<<", N="<<N<<", K="<<K<<"\n"
-           <<"----------------------------------------\n\n";
-
-  try{
-    auto gemm = DgemmFactory::create(impl);
-    auto monu = PerfMonitorFactory::create(mon);
-    monu->setName(mon);
-    monu->setPrintEnabled(live);
-
-    std::cout<<"Initializing...\n";
-    gemm->initialize(M,N,K);
-
-    std::cout<<"Starting computation...\n";
-    monu->start();
-    auto t0 = std::chrono::high_resolution_clock::now();
-    gemm->run();
-    auto t1 = std::chrono::high_resolution_clock::now();
-    monu->stop();
-
-    std::cout<<"Computation finished.\n\n--- Results Summary ---\n";
-    std::chrono::duration<double> dt = t1 - t0;
-    gemm->report(dt.count());
-    monu->report();
-
-    std::cout<<"\nCleaning up...\n";
-    gemm->cleanup();
-    std::cout<<"Done.\n";
-  } catch (const std::exception& e){
-    std::cerr<<"Fatal error: "<<e.what()<<"\n";
-    return 1;
-  }
-  return 0;
+    printf("Done. Wrote %s\n", outname);
+    return 0;
 }
