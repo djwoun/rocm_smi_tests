@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-// #include "papi.h" // Removed PAPI include
+#include "papi.h" // Removed PAPI include
 #include <hip/hip_runtime.h>
 #include <unistd.h>      // For usleep()
 #include <sys/time.h>    // For gettimeofday()
@@ -32,14 +32,14 @@ typedef struct {
 } temp_sensor_info_t;
 
 temp_sensor_info_t amd_smi_sensors[] = {
-    {AMDSMI_TEMPERATURE_TYPE_EDGE,    "Temp_Edge_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HOTSPOT, "Temp_Hotspot_Junction_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_VRAM,    "Temp_VRAM_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HBM_0,   "Temp_HBM0_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HBM_1,   "Temp_HBM1_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HBM_2,   "Temp_HBM2_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HBM_3,   "Temp_HBM3_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_PLX,     "Temp_PLX_mC"}
+    {AMDSMI_TEMPERATURE_TYPE_EDGE,    "Temp_Edge"},
+    {AMDSMI_TEMPERATURE_TYPE_HOTSPOT, "Temp_Hotspot_Junction"},
+    {AMDSMI_TEMPERATURE_TYPE_VRAM,    "Temp_VRAM"},
+    {AMDSMI_TEMPERATURE_TYPE_HBM_0,   "Temp_HBM0"},
+    {AMDSMI_TEMPERATURE_TYPE_HBM_1,   "Temp_HBM1"},
+    {AMDSMI_TEMPERATURE_TYPE_HBM_2,   "Temp_HBM2"},
+    {AMDSMI_TEMPERATURE_TYPE_HBM_3,   "Temp_HBM3"},
+    {AMDSMI_TEMPERATURE_TYPE_PLX,     "Temp_PLX"}
 };
 const int NUM_AMD_SMI_SENSORS = sizeof(amd_smi_sensors) / sizeof(amd_smi_sensors[0]);
 
@@ -768,7 +768,7 @@ int main(int argc, char *argv[]) {
      printf("AMD SMI initialized successfully.\n");
 
     /* Find the AMD SMI processor handle for the target GPU */
-    uint32_t target_logical_gpu_index = 0; // Default to GPU 0
+    uint32_t target_logical_gpu_index = 1; // Default to GPU 0
     if (argc > 1) {
         target_logical_gpu_index = atoi(argv[1]);
         printf("Targeting logical GPU index %u from command line argument.\n", target_logical_gpu_index);
@@ -863,6 +863,7 @@ int main(int argc, char *argv[]) {
 
 
     /* Set HIP device */
+    //(int)target_logical_gpu_index
     int hip_device_index = (int)target_logical_gpu_index; // Use the logical index we targeted
     printf("Attempting to set HIP device to index %d (assuming it corresponds to the targeted SMI device).\n", hip_device_index);
     hipStatus = hipSetDevice(hip_device_index);
@@ -979,12 +980,10 @@ int main(int argc, char *argv[]) {
     /* Start the monitoring thread */
     params.gpu_handle = target_gpu_handle;
     params.csvFile = csvFile;
-    params.monitor_interval_us = 500000; // Set interval (0.5 seconds - same as original PAPI sleep)
+    params.monitor_interval_us = 100000; // Set interval (0.5 seconds - same as original PAPI sleep)
     gettimeofday(&params.start_time, NULL); // Get start time just before thread creation
 
-    // Add initial delay before starting monitor to help meet 1s requirement for first process call
-    printf("Waiting 1.1 seconds before starting monitor thread...\n");
-    usleep(1100000); // Sleep for 1.1 seconds
+    
 
     stop_monitor = 0; // Ensure flag is reset
     int thread_status = pthread_create(&monitor_thread, NULL, monitor_events, &params);

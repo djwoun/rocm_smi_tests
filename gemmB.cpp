@@ -28,14 +28,14 @@ typedef struct {
 } temp_sensor_info_t;
 
 temp_sensor_info_t amd_smi_sensors[] = {
-    {AMDSMI_TEMPERATURE_TYPE_EDGE,    "Temp_Edge_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HOTSPOT, "Temp_Hotspot_Junction_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_VRAM,    "Temp_VRAM_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HBM_0,   "Temp_HBM0_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HBM_1,   "Temp_HBM1_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HBM_2,   "Temp_HBM2_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_HBM_3,   "Temp_HBM3_mC"},
-    {AMDSMI_TEMPERATURE_TYPE_PLX,     "Temp_PLX_mC"}
+    {AMDSMI_TEMPERATURE_TYPE_EDGE,    "Temp_Edge"},
+    {AMDSMI_TEMPERATURE_TYPE_HOTSPOT, "Temp_Hotspot_Junction"},
+    {AMDSMI_TEMPERATURE_TYPE_VRAM,    "Temp_VRAM"},
+    {AMDSMI_TEMPERATURE_TYPE_HBM_0,   "Temp_HBM0"},
+    {AMDSMI_TEMPERATURE_TYPE_HBM_1,   "Temp_HBM1"},
+    {AMDSMI_TEMPERATURE_TYPE_HBM_2,   "Temp_HBM2"},
+    {AMDSMI_TEMPERATURE_TYPE_HBM_3,   "Temp_HBM3"},
+    {AMDSMI_TEMPERATURE_TYPE_PLX,     "Temp_PLX"}
 };
 const int NUM_AMD_SMI_SENSORS = sizeof(amd_smi_sensors) / sizeof(amd_smi_sensors[0]);
 
@@ -832,7 +832,8 @@ int main(int argc, char *argv[]) {
     }
 
     /* Set HIP device */
-    int hip_device_index = (int)target_logical_gpu_index;
+    //(int)target_logical_gpu_index
+    int hip_device_index = 1;
     printf("Attempting to set HIP device to index %d (assuming it corresponds to the targeted SMI device).\n", hip_device_index);
     hipStatus = hipSetDevice(hip_device_index);
      if (hipStatus != hipSuccess) {
@@ -928,6 +929,7 @@ int main(int argc, char *argv[]) {
     for(int i = 0; i < NUM_AMD_SMI_PCIE_STATIC_METRICS; ++i) fprintf(csvFile, ",%s", amd_smi_pcie_static_names[i]);
     for(int i = 0; i < NUM_AMD_SMI_PCIE_METRIC_METRICS; ++i) fprintf(csvFile, ",%s", amd_smi_pcie_metric_names[i]);
     for(int i = 0; i < NUM_AMD_SMI_GPU_METRICS; ++i) fprintf(csvFile, ",%s", amd_smi_gpu_metric_names[i]);
+    fprintf(csvFile, ",NumProcesses"); // Add header for the process count
     fprintf(csvFile, "\n"); // End header row
     fflush(csvFile);
     printf("CSV file opened and header written.\n");
@@ -936,12 +938,8 @@ int main(int argc, char *argv[]) {
     /* Start the monitoring thread */
     params.gpu_handle = target_gpu_handle;
     params.csvFile = csvFile;
-    params.monitor_interval_us = 300000; // Set interval (0.3 seconds)
+    params.monitor_interval_us = 100000; // Set interval (0.3 seconds)
     gettimeofday(&params.start_time, NULL); // Get start time just before thread creation
-
-    // Add initial delay before starting monitor to help meet 1s requirement for first process call
-    printf("Waiting 1.1 seconds before starting monitor thread...\n");
-    usleep(1100000); // Sleep for 1.1 seconds
 
     stop_monitor = 0; // Ensure flag is reset
     int thread_status = pthread_create(&monitor_thread, NULL, monitor_events, &params);
@@ -959,7 +957,7 @@ int main(int argc, char *argv[]) {
                  (M_DIM + blockDim.y - 1) / blockDim.y);
 
     printf("Launching DGEMM kernel (%d iterations per stream)...\n", ITERATIONS_PER_STREAM);
-    usleep(1000000); // Small delay before starting work
+    usleep(5000000); // Small delay before starting work
 
     for (int iter = 0; iter < ITERATIONS_PER_STREAM; iter++) {
         for (int s = 0; s < NUM_STREAMS; s++) {
@@ -990,7 +988,7 @@ int main(int argc, char *argv[]) {
             }
         }
          printf("Completed iteration %d\n", iter + 1);
-         usleep(3000000); // 3 sec delay between iterations
+         usleep(5000000); // 5 sec delay between iterations
     }
     printf("DGEMM kernel executions finished.\n");
 

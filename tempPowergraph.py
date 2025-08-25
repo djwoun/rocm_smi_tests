@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 
 # Adjust the file name if needed.
-csv_file = 'data/dopamine_gemm_14592_65536_1024_3249_20RUNS3.csv'
+csv_file = 'data/odyssey_gemm_7682_65536_1024_961_20RUNS.csv'
 
 # Read the CSV file.
 df = pd.read_csv(csv_file)
@@ -19,7 +19,7 @@ df = pd.read_csv(csv_file)
 df['time_s'] = df['timestamp'] - df['timestamp'].iloc[0]
 
 # Define your device and sensor variables.
-device_id = 0
+device_id = 1
 sensor_id = 1
 
 temp = ["Edge", "Junction", "Memory"]
