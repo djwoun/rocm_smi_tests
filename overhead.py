@@ -1,4 +1,6 @@
+# %%
 #!/usr/bin/env python3
+
 """
 metrics_viz_suite.py
 
@@ -129,24 +131,24 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
     # centerline
     ax.axvline(0, lw=2)
 
-    # percentiles
-    ql = np.percentile(left,  [25, 50, 75])
-    qr = np.percentile(right, [25, 50, 75])
+    # percentiles (medians only) -> draw as black lines
+    ql = np.percentile(left,  [50])
+    qr = np.percentile(right, [50])
     lc = left_poly.get_facecolor()[0]
     rc = right_poly.get_facecolor()[0]
-    for q in ql: ax.plot([0, -width*0.95], [q, q], lw=1.5, alpha=0.8, color=lc)
-    for q in qr: ax.plot([0,  width*0.95], [q, q], lw=1.5, alpha=0.8, color=rc)
+    for q in ql: ax.plot([0, -width*0.95], [q, q], lw=1.8, color="black")
+    for q in qr: ax.plot([0,  width*0.95], [q, q], lw=1.8, color="black")
 
-    # means
-    mean_l = float(np.mean(left))
-    mean_r = float(np.mean(right))
-    ax.plot([0, -width], [mean_l, mean_l], lw=2.5, color=lc)
-    ax.plot([0,  width], [mean_r, mean_r], lw=2.5, color=rc)
-    y_top = (y_grid[-1])
-    ax.text(-width*0.98, y_top, f"{left_label.split()[0]} mean: {mean_l:.2f}µs",
-            ha="left", va="top", fontsize=11, color=lc)
-    ax.text( width*0.98, y_top, f"{right_label.split()[0]} mean: {mean_r:.2f}µs",
-            ha="right", va="top", fontsize=11, color=rc)
+    # means (removed)
+    # mean_l = float(np.mean(left))
+    # mean_r = float(np.mean(right))
+    # ax.plot([0, -width], [mean_l, mean_l], lw=2.5, color=lc)
+    # ax.plot([0,  width], [mean_r, mean_r], lw=2.5, color=rc)
+    # y_top = (y_grid[-1])
+    # ax.text(-width*0.98, y_top, f"{left_label.split()[0]} mean: {mean_l:.2f}µs",
+    #         ha="left", va="top", fontsize=11, color=lc)
+    # ax.text( width*0.98, y_top, f"{right_label.split()[0]} mean: {mean_r:.2f}µs",
+    #         ha="right", va="top", fontsize=11, color=rc)
 
     ax.set_ylim(y_grid[0], y_grid[-1])
     ax.set_xlim(-width*1.15, width*1.15)
@@ -221,7 +223,7 @@ def plot_diff_hist(pairs: List[Tuple[str,float,float]],
     ax.set_ylabel("Count")
     ax.grid(True, axis="y", alpha=0.25)
     ax.text(0.99, 0.95, f"mean={mu:.2f}µs, σ={sd:.2f}µs",
-            ha="right", va="top", transform=ax.transAxes)
+        ha="right", va="top", transform=ax.transAxes)
     return fig, ax
 
 
