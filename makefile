@@ -2,7 +2,7 @@ HIPCC = hipcc
 PAPI ?= /storage/users/dwoun/apps/papi
 
 # Compiler flags
-INC = -I${PAPI}/include 
+INC = -I${PAPI}/include  -I/opt/rocm-6.4.0/include/rocblas
 # -I/opt/rocm/include/amd_smi
 LIB = -L${PAPI}/lib -lpapi -L/opt/rocm-6.4.0/lib -lpthread -lamd_smi -lrocblas 
 #-lamd_smi  
