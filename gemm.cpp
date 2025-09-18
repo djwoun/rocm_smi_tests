@@ -6,6 +6,8 @@
 #include <unistd.h>      // For usleep()
 #include <sys/time.h>    // For gettimeofday()
 #include <pthread.h>     // For pthreads
+#include <string.h>      // For strstr, sscanf
+#include <vector>        // <-- for dynamic event list
 
 #define M_DIM 14592  
 #define K_DIM 65536  
@@ -15,7 +17,7 @@
 #define NUM_STREAMS 1
 
 // Number of iterations to run in each stream
-#define ITERATIONS_PER_STREAM 20
+#define ITERATIONS_PER_STREAM 1
 
 // Global flag to signal the monitor thread to stop.
 volatile int stop_monitor = 0;
@@ -25,17 +27,18 @@ struct monitor_params {
     int EventSet;
     FILE *csvFile;
     struct timeval start_time;
+    int num_events; // <-- number of PAPI events being tracked
 };
 
 // Monitor thread that periodically reads PAPI counters and logs them.
 void *monitor_events(void *args) {
     struct monitor_params *params = (struct monitor_params *)args;
     int statusFlag;
-    long long values[5];
+    std::vector<long long> values(params->num_events);
 
     // Continue monitoring until stop_monitor is set.
     while (!stop_monitor) {
-        statusFlag = PAPI_read(params->EventSet, values);
+        statusFlag = PAPI_read(params->EventSet, values.data());
         if (statusFlag != PAPI_OK) {
             fprintf(stderr, "PAPI read failed in monitor: %s\n", PAPI_strerror(statusFlag));
             break;
@@ -46,8 +49,9 @@ void *monitor_events(void *args) {
         double elapsed = (current_time.tv_sec - params->start_time.tv_sec) +
                          (current_time.tv_usec - params->start_time.tv_usec) / 1e6;
 
-
+        
         int gpu1_power = -1; // Default to -1 (error/unavailable)
+        /*
         FILE *fp = popen("amd-smi metric -g 1 -p --csv", "r"); // Use specific command
         if (fp != NULL) {
             char buffer[128]; // Sufficient buffer for the expected output
@@ -82,7 +86,6 @@ void *monitor_events(void *args) {
                  gpu1_power = -1; // Header wasn't even found
             }
 
-
             int status = pclose(fp);
             // If command failed execution, ensure power is marked as error
             if (status == -1 || (WIFEXITED(status) && WEXITSTATUS(status) != 0)) {
@@ -95,16 +98,21 @@ void *monitor_events(void *args) {
              perror("Failed to run amd-smi"); // popen failed itself
              // gpu1_power remains -1
         }
-
+        */
         // Write the PAPI values and the GPU 1 power value to the CSV file.
-        fprintf(params->csvFile, "%.6f,%lld,%lld,%lld,%lld,%lld,%d\n",
-                elapsed, values[0], values[1], values[2], values[3], values[4], gpu1_power);
+        fprintf(params->csvFile, "%.6f", elapsed);
+        for (int i = 0; i < params->num_events; ++i) {
+            fprintf(params->csvFile, ",%lld", values[i]);
+        }
+        fprintf(params->csvFile, ",%d\n", gpu1_power);
         fflush(params->csvFile);
 
         // Also print to stdout.
-        fprintf(stdout,
-                "Time: %.6f sec -> event1: %lld, event2: %lld, event3: %lld, event4: %lld, event5: %lld, GPU1_POWER: %d\n",
-                elapsed, values[0], values[1], values[2], values[3], values[4], gpu1_power);
+        fprintf(stdout, "Time: %.6f sec -> ", elapsed);
+        for (int i = 0; i < params->num_events; ++i) {
+            fprintf(stdout, "event%d: %lld%s", i + 1, values[i], (i + 1 < params->num_events) ? ", " : ", ");
+        }
+        fprintf(stdout, "GPU1_POWER: %d\n", gpu1_power);
 
         usleep(300000);  // Sleep for 0.5 seconds.
     }
@@ -145,46 +153,52 @@ int main(int argc, char *argv[]) {
 
     /* Create event set. */
     statusFlag = PAPI_create_eventset(&EventSet);
-    if (statusFlag != PAPI_OK) {
+    if (statusFlag != PAPI_OK) { 
         fprintf(stderr, "PAPI create eventset: %s\n", PAPI_strerror(statusFlag));
         return -1;
     } 
 
-    /* Add GPU events to the event set. */
-    const char *event1 = "rocm_smi:::temp_current:device=1:sensor=1";
-    const char *event2 = "rocm_smi:::temp_current:device=1:sensor=2";
-    const char *event3 = "rocm_smi:::mem_usage_VRAM:device=1";
-    const char *event4 = "rocm_smi:::busy_percent:device=1";
-    const char *event5 = "rocm_smi:::memory_busy_percent:device=1";  // New event
+    /* Add GPU events to the event set. (Now configurable via a vector) */
+    std::vector<const char*> eventNames = {
+    "amd_smi:::temp_current:device=1:sensor=0",
+    "amd_smi:::temp_current:device=1:sensor=1",
+    "amd_smi:::temp_current:device=1:sensor=2",
+    "amd_smi:::temp_current:device=1:sensor=3",
+    "amd_smi:::temp_current:device=1:sensor=4",
+    "amd_smi:::temp_current:device=1:sensor=5",
+    "amd_smi:::temp_current:device=1:sensor=6",
+    "amd_smi:::temp_current:device=1:sensor=7",
+    "amd_smi:::gfx_activity:device=1",
+    "amd_smi:::umc_activity:device=1",
+    "amd_smi:::mm_activity:device=1",
+    "amd_smi:::power_average:device=1",
+    "amd_smi:::power_cap_range_min:device=1",
+    "amd_smi:::power_cap_range_max:device=1",
+    "amd_smi:::mem_usage_VRAM:device=1",
+    "amd_smi:::mem_total_VRAM:device=1",
+    "amd_smi:::clk_freq_current:device=1",
+    };
 
-    statusFlag = PAPI_add_named_event(EventSet, event1);
-    if (statusFlag != PAPI_OK) {
-        fprintf(stderr, "PAPI add named event 1: %s\n", PAPI_strerror(statusFlag));
-        return -1;
-    }
-    statusFlag = PAPI_add_named_event(EventSet, event2);
-    if (statusFlag != PAPI_OK) {
-        fprintf(stderr, "PAPI add named event 2: %s\n", PAPI_strerror(statusFlag));
-        return -1;
-    }
-    statusFlag = PAPI_add_named_event(EventSet, event3);
-    if (statusFlag != PAPI_OK) {
-        fprintf(stderr, "PAPI add named event 3: %s\n", PAPI_strerror(statusFlag));
-        return -1;
-    }
-    statusFlag = PAPI_add_named_event(EventSet, event4);
-    if (statusFlag != PAPI_OK) {
-        fprintf(stderr, "PAPI add named event 4: %s\n", PAPI_strerror(statusFlag));
-        return -1;
-    }
-    statusFlag = PAPI_add_named_event(EventSet, event5);
-    if (statusFlag != PAPI_OK) {
-        fprintf(stderr, "PAPI add named event 5: %s\n", PAPI_strerror(statusFlag));
-        return -1;
+    /* If you want to switch to rocm_smi, comment the block above and use this:
+    std::vector<const char*> eventNames = {
+        "rocm_smi:::temp_current:device=1:sensor=1",
+        "rocm_smi:::temp_current:device=1:sensor=2",
+        "rocm_smi:::mem_usage_VRAM:device=1",
+        "rocm_smi:::busy_percent:device=1",
+        "rocm_smi:::memory_busy_percent:device=1"
+    };
+    */
+
+    for (int i = 0; i < (int)eventNames.size(); ++i) {
+        statusFlag = PAPI_add_named_event(EventSet, eventNames[i]);
+        if (statusFlag != PAPI_OK) {
+            fprintf(stderr, "PAPI add named event %d: %s\n", i + 1, PAPI_strerror(statusFlag));
+            return -1;
+        }
     }
 
     /* Set HIP device properties to optimize for MI300 */
-    hipSetDevice(1);
+    hipSetDevice(0);
     hipDeviceProp_t deviceProp;
     hipGetDeviceProperties(&deviceProp, 1);
     printf("Device Name: %s\n", deviceProp.name);
@@ -282,8 +296,12 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Failed to open CSV file for writing.\n");
         return -1;
     }
-    fprintf(csvFile, "timestamp,%s,%s,%s,%s,%s,%s\n",
-        event1, event2, event3, event4, event5, "power");
+    // Dynamic header: timestamp, <each event name>, power
+    fprintf(csvFile, "timestamp");
+    for (int i = 0; i < (int)eventNames.size(); ++i) {
+        fprintf(csvFile, ",%s", eventNames[i]);
+    }
+    fprintf(csvFile, ",%s\n", "power");
 
     /* Start PAPI counters to monitor GPU metrics. */
     statusFlag = PAPI_start(EventSet);
@@ -298,6 +316,7 @@ int main(int argc, char *argv[]) {
     params.EventSet = EventSet;
     params.csvFile = csvFile;
     gettimeofday(&params.start_time, NULL);  // Record the start time
+    params.num_events = (int)eventNames.size(); // <-- pass how many events we have
 
     statusFlag = pthread_create(&monitor_thread, NULL, monitor_events, &params);
     if (statusFlag != 0) {

@@ -124,7 +124,7 @@ struct PapiMonitor : public Monitor {
             name("amd_smi:::power_cap_range_max:device=%d"),
             name("amd_smi:::mem_usage_VRAM:device=%d"),
             name("amd_smi:::mem_total_VRAM:device=%d"),
-            name("amd_smi:::clk_freq_current:device=%d"),
+            name("amd_smi:::clk_freq_sys_current:device=%d"),
         };
 
         int st = PAPI_library_init(PAPI_VER_CURRENT);

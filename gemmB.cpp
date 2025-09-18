@@ -16,7 +16,7 @@
 #define NUM_STREAMS 1
 
 // Number of iterations to run in each stream
-#define ITERATIONS_PER_STREAM 20
+#define ITERATIONS_PER_STREAM 1
 
 // Global flag to signal the monitor thread to stop.
 volatile int stop_monitor = 0;
@@ -284,7 +284,7 @@ void collect_pcie_info(amdsmi_processor_handle handle, long long* output_values)
         output_values[1] = (long long)pcie_info.pcie_static.max_pcie_speed;
         output_values[2] = (long long)pcie_info.pcie_static.pcie_interface_version;
         output_values[3] = (long long)pcie_info.pcie_static.slot_type; // Enum value
-        output_values[4] = (long long)pcie_info.pcie_static.max_pcie_interface_version;
+        output_values[4] = (long long)pcie_info.pcie_static.pcie_interface_version;
 
         // Extract Dynamic PCIe Metrics (start writing after static metrics)
         int metric_base = NUM_AMD_SMI_PCIE_STATIC_METRICS;
@@ -748,7 +748,7 @@ int main(int argc, char *argv[]) {
 
 
     /* Initialize AMD SMI */
-    smi_status = amdsmi_init(AMDSMI_INIT_ALL_PROCESSORS | AMDSMI_INIT_AMD_APUS);
+    smi_status = amdsmi_init( AMDSMI_INIT_AMD_GPUS);
      if (smi_status != AMDSMI_STATUS_SUCCESS) {
          fprintf(stderr, "Failed to initialize AMD SMI library (Error: %d)\n", smi_status);
          return -1;

@@ -760,7 +760,7 @@ int main(int argc, char *argv[]) {
 
 
     /* Initialize AMD SMI */
-    smi_status = amdsmi_init(AMDSMI_INIT_ALL_PROCESSORS | AMDSMI_INIT_AMD_APUS);
+    smi_status = amdsmi_init(AMDSMI_INIT_AMD_GPUS); 
      if (smi_status != AMDSMI_STATUS_SUCCESS) {
          fprintf(stderr, "Failed to initialize AMD SMI library (Error: %d)\n", smi_status);
          return -1; // No resources allocated yet, safe to just return
