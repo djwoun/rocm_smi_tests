@@ -103,12 +103,13 @@ def _kde_1d(samples: np.ndarray, y_grid: np.ndarray) -> np.ndarray:
 def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
                             title: str, left_label: str, right_label: str,
                             ylabel: str = "Time in µs", width: float = 0.9,
-                            grid_points: int = 256, pad_frac: float = 0.08) -> Tuple[plt.Figure, plt.Axes]:
+                            grid_points: int = 256, pad_frac: float = 0.08,
+                            label_offset_frac: float = 0.06) -> Tuple[plt.Figure, plt.Axes]:
     """
     Split (butterfly) violin with:
       - clearer center line
-      - 25/50/75th percentile bands
-      - top-corner mean labels
+      - 50th percentile (median) bands
+      - top-corner mean + median labels (slightly below top via label_offset_frac)
     """
     left = np.asarray(left, float).ravel()
     right = np.asarray(right, float).ravel()
@@ -131,24 +132,33 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
     # centerline
     ax.axvline(0, lw=2)
 
-    # percentiles (medians only) -> draw as black lines
+    # medians (50th) as black lines
     ql = np.percentile(left,  [50])
     qr = np.percentile(right, [50])
+    med_l = float(ql[0])
+    med_r = float(qr[0])
     lc = left_poly.get_facecolor()[0]
     rc = right_poly.get_facecolor()[0]
     for q in ql: ax.plot([0, -width*0.95], [q, q], lw=1.8, color="black")
     for q in qr: ax.plot([0,  width*0.95], [q, q], lw=1.8, color="black")
 
-    # means (removed)
-    # mean_l = float(np.mean(left))
-    # mean_r = float(np.mean(right))
-    # ax.plot([0, -width], [mean_l, mean_l], lw=2.5, color=lc)
-    # ax.plot([0,  width], [mean_r, mean_r], lw=2.5, color=rc)
-    # y_top = (y_grid[-1])
-    # ax.text(-width*0.98, y_top, f"{left_label.split()[0]} mean: {mean_l:.2f}µs",
-    #         ha="left", va="top", fontsize=11, color=lc)
-    # ax.text( width*0.98, y_top, f"{right_label.split()[0]} mean: {mean_r:.2f}µs",
-    #         ha="right", va="top", fontsize=11, color=rc)
+    # means (colored lines)
+    mean_l = float(np.mean(left))
+    mean_r = float(np.mean(right))
+    ax.plot([0, -width*0.95], [mean_l, mean_l], lw=2.5, color=lc)
+    ax.plot([0,  width*0.95], [mean_r, mean_r], lw=2.5, color=rc)
+
+    # top-corner labels positioned slightly below the top
+    y0, y1 = y_grid[0], y_grid[-1]
+    label_y = y1 - label_offset_frac * (y1 - y0)
+    vendor = left_label.split()[0]   # "Vendor call Overhead" -> "Vendor"
+    total  = right_label.split()[0]  # "Total PAPI_read() Overhead" -> "Total"
+    ax.text(-width*0.98, label_y,
+            f"{vendor} mean: {mean_l:.2f}µs\n{vendor} median: {med_l:.2f}µs",
+            ha="left", va="top", fontsize=11, color=lc)
+    ax.text( width*0.98, label_y,
+            f"{total} mean: {mean_r:.2f}µs\n{total} median: {med_r:.2f}µs",
+            ha="right", va="top", fontsize=11, color=rc)
 
     ax.set_ylim(y_grid[0], y_grid[-1])
     ax.set_xlim(-width*1.15, width*1.15)
@@ -157,6 +167,7 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
     ax.set_title(title, pad=8, fontsize=14)
     ax.grid(True, axis="y", alpha=0.25)
     return fig, ax
+
 
 
 def plot_slope_per_metric(pairs: List[Tuple[str,float,float]],
@@ -268,7 +279,7 @@ def main():
     p.add_argument("--right-source", default="PAPI",   help="Right side source (default: PAPI).")
     p.add_argument("--title", default="Overhead of PAPI_read() in sampling mode")
     p.add_argument("--left-label", default="Vendor call Overhead")
-    p.add_argument("--right-label", default="Total PAPI_read() Overhead")
+    p.add_argument("--right-label", default="PAPI_read() Overhead")
     p.add_argument("--out-prefix", default="overhead", help="Filename prefix for outputs.")
     p.add_argument("--butterfly", action="store_true")
     p.add_argument("--slope", action="store_true")
