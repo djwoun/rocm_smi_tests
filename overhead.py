@@ -5,10 +5,12 @@
 metrics_viz_suite.py
 
 Create publication-ready plots from the long-form overhead CSV:
-  metric, source, api, iters, ok_count, min_us, avg_us, max_us, notes
+  metric, source, api, iters, ok_count, min_us, avg_us, max_us, stddev_us, notes
 
 What you get (choose individually or --all):
   - Butterfly split violin (AMDSMI vs PAPI, aggregated)
+    * Shows mean & median for each side
+    * NEW: Shows Standard Deviation (from stddev_us) below the mean for each side
   - Slope (dumbbell) plot per metric
   - Scatter PAPI vs AMDSMI (with y=x)
   - Histogram of (PAPI - AMDSMI)
@@ -24,7 +26,7 @@ Example:
 
 from __future__ import annotations
 import argparse, sys, math, re
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Optional
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -104,12 +106,14 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
                             title: str, left_label: str, right_label: str,
                             ylabel: str = "Time in µs", width: float = 0.9,
                             grid_points: int = 256, pad_frac: float = 0.08,
-                            label_offset_frac: float = 0.06) -> Tuple[plt.Figure, plt.Axes]:
+                            label_offset_frac: float = 0.06,
+                            left_stddev: Optional[float] = None,
+                            right_stddev: Optional[float] = None) -> Tuple[plt.Figure, plt.Axes]:
     """
     Split (butterfly) violin with:
       - clearer center line
       - 50th percentile (median) bands
-      - top-corner mean + median labels (slightly below top via label_offset_frac)
+      - top-corner mean + (optional) stddev + median labels
     """
     left = np.asarray(left, float).ravel()
     right = np.asarray(right, float).ravel()
@@ -152,12 +156,22 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
     y0, y1 = y_grid[0], y_grid[-1]
     label_y = y1 - label_offset_frac * (y1 - y0)
     vendor = left_label.split()[0]   # "Vendor call Overhead" -> "Vendor"
-    total  = right_label.split()[0]  # "Total PAPI_read() Overhead" -> "Total"
-    ax.text(-width*0.98, label_y,
-            f"{vendor} mean: {mean_l:.2f}µs\n{vendor} median: {med_l:.2f}µs",
+    total  = right_label.split()[0]  # "PAPI_read() Overhead" -> "PAPI_read()"
+
+    # Build label text: mean, stddev (if provided), median
+    left_lines = [f"{vendor} mean: {mean_l:.2f}µs"]
+    if (left_stddev is not None) and np.isfinite(left_stddev):
+        left_lines.append(f"{vendor} stddev: {left_stddev:.2f}µs")
+    left_lines.append(f"{vendor} median: {med_l:.2f}µs")
+
+    right_lines = [f"{total} mean: {mean_r:.2f}µs"]
+    if (right_stddev is not None) and np.isfinite(right_stddev):
+        right_lines.append(f"{total} stddev: {right_stddev:.2f}µs")
+    right_lines.append(f"{total} median: {med_r:.2f}µs")
+
+    ax.text(-width*0.98, label_y, "\n".join(left_lines),
             ha="left", va="top", fontsize=11, color=lc)
-    ax.text( width*0.98, label_y,
-            f"{total} mean: {mean_r:.2f}µs\n{total} median: {med_r:.2f}µs",
+    ax.text( width*0.98, label_y, "\n".join(right_lines),
             ha="right", va="top", fontsize=11, color=rc)
 
     ax.set_ylim(y_grid[0], y_grid[-1])
@@ -273,6 +287,8 @@ def main():
     p.add_argument("--csv", required=True, help="Long-form CSV/TSV with columns incl. 'metric','source','avg_us'.")
     p.add_argument("--value-col", default="avg_us", choices=["min_us","avg_us","max_us"],
                    help="Which column to visualize (default: avg_us).")
+    p.add_argument("--stddev-col", default="stddev_us",
+                   help="Per-row stddev column (µs) to aggregate and display under each mean in the butterfly plot.")
     p.add_argument("--metric-regex", default=None,
                    help="Optional regex to subset metrics (e.g., 'temp_current').")
     p.add_argument("--left-source", default="AMDSMI", help="Left side source (default: AMDSMI).")
@@ -306,6 +322,22 @@ def main():
     if left_vals.size == 0 or right_vals.size == 0:
         sys.exit(f"No data for sources {args.left_source} / {args.right_source} using {args.value_col}")
 
+    # Aggregate stddev per source (mean of per-row stddevs). If missing, omit.
+    left_stddev = right_stddev = None
+    if args.stddev_col in df.columns:
+        left_std_vals  = pd.to_numeric(
+            df.loc[df["source"] == args.left_source,  args.stddev_col],
+            errors="coerce"
+        ).dropna()
+        right_std_vals = pd.to_numeric(
+            df.loc[df["source"] == args.right_source, args.stddev_col],
+            errors="coerce"
+        ).dropna()
+        if not left_std_vals.empty:
+            left_stddev = float(left_std_vals.mean())
+        if not right_std_vals.empty:
+            right_stddev = float(right_std_vals.mean())
+
     do_all = args.all or not any([args.butterfly, args.slope, args.scatter, args.hist, args.bland])
 
     if args.butterfly or do_all:
@@ -315,6 +347,8 @@ def main():
             left_label=args.left_label,
             right_label=args.right_label,
             ylabel="Time in µs",
+            left_stddev=left_stddev,
+            right_stddev=right_stddev,
         )
         fn = f"{args.out_prefix}_butterfly.png"
         fig.savefig(fn, dpi=200)
