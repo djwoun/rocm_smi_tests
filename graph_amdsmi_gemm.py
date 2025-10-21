@@ -85,9 +85,9 @@ def main() -> int:
     memory_col = f"amd_smi:::temp_current_sensor=7:device={device}"
     gfx_col = f"amd_smi:::gfx_activity:device={device}"
     umc_col = f"amd_smi:::umc_activity:device={device}"
-    power_col = f"amd_smi:::power_current:device={device}"
+    power_col = f"amd_smi:::power_average:device={device}"
     cu_col = (
-        f"amd_smi:::process_cu_occupancy_proc={args.proc}:device={device}"
+        f"amd_smi:::process_u_occupancy_proc={args.proc}:device={device}"
     )
 
     try:
@@ -257,13 +257,13 @@ def main() -> int:
             lines.append(line_cu)
             labels.append(line_cu.get_label())
 
-    ax_temp.set_title("AMD-SMI GEMM Monitor - MI300A")
+    ax_temp.set_title("AMD-SMI GEMM Monitor - MI250X")
     t_min = df["time_s"].min()
     t_max = df["time_s"].max()
     ax_temp.set_xlim(t_min, t_max)
     xtick_min = int(t_min)
     xtick_max = int(t_max)
-    ax_temp.set_xticks(range(xtick_min, xtick_max + 1, 1))
+    ax_temp.set_xticks(range(xtick_min, xtick_max + 1, 5))
     ax_temp.legend(
         lines,
         labels,
