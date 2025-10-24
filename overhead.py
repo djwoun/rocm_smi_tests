@@ -1,4 +1,3 @@
-# %%
 #!/usr/bin/env python3
 
 """
@@ -10,7 +9,8 @@ Create publication-ready plots from the long-form overhead CSV:
 What you get (choose individually or --all):
   - Butterfly split violin (AMDSMI vs PAPI, aggregated)
     * Shows mean & median for each side
-    * NEW: Shows Standard Deviation (from stddev_us) below the mean for each side
+    * Shows Standard Deviation (from stddev_us) below the mean for each side
+    * NEW: y-axis controls: --ymin/--ymax/--ytick-base (default ymin=0)
   - Slope (dumbbell) plot per metric
   - Scatter PAPI vs AMDSMI (with y=x)
   - Histogram of (PAPI - AMDSMI)
@@ -29,6 +29,7 @@ import argparse, sys, math, re
 from typing import Tuple, Dict, List, Optional
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MultipleLocator
 
 try:
     import pandas as pd
@@ -108,20 +109,32 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
                             grid_points: int = 256, pad_frac: float = 0.08,
                             label_offset_frac: float = 0.06,
                             left_stddev: Optional[float] = None,
-                            right_stddev: Optional[float] = None) -> Tuple[plt.Figure, plt.Axes]:
+                            right_stddev: Optional[float] = None,
+                            ymin: Optional[float] = 0.0,
+                            ymax: Optional[float] = None,
+                            ytick_base: Optional[float] = None) -> Tuple[plt.Figure, plt.Axes]:
     """
     Split (butterfly) violin with:
       - clearer center line
       - 50th percentile (median) bands
       - top-corner mean + (optional) stddev + median labels
+      - y-axis lower bound clamped by `ymin` (default 0) for time-series appropriateness
     """
     left = np.asarray(left, float).ravel()
     right = np.asarray(right, float).ravel()
 
-    y_min = min(left.min(), right.min())
-    y_max = max(left.max(), right.max())
-    y_pad = (y_max - y_min) * pad_frac if y_max > y_min else 1.0
-    y_grid = np.linspace(y_min - y_pad, y_max + y_pad, grid_points)
+    # Determine data bounds and padded display range
+    data_min = float(min(left.min(), right.min()))
+    data_max = float(max(left.max(), right.max()))
+    y_pad = (data_max - data_min) * pad_frac if data_max > data_min else 1.0
+
+    raw_y0 = data_min - y_pad
+    raw_y1 = data_max + y_pad
+    y0 = max(ymin, raw_y0) if ymin is not None else raw_y0
+    y1 = min(ymax, raw_y1) if ymax is not None else raw_y1
+
+    # Use the visible y-range for KDE grid so the shapes match what we show
+    y_grid = np.linspace(y0, y1, grid_points)
 
     dl = _kde_1d(left, y_grid)
     dr = _kde_1d(right, y_grid)
@@ -137,14 +150,12 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
     ax.axvline(0, lw=2)
 
     # medians (50th) as black lines
-    ql = np.percentile(left,  [50])
-    qr = np.percentile(right, [50])
-    med_l = float(ql[0])
-    med_r = float(qr[0])
+    med_l = float(np.percentile(left,  50))
+    med_r = float(np.percentile(right, 50))
     lc = left_poly.get_facecolor()[0]
     rc = right_poly.get_facecolor()[0]
-    for q in ql: ax.plot([0, -width*0.95], [q, q], lw=1.8, color="black")
-    for q in qr: ax.plot([0,  width*0.95], [q, q], lw=1.8, color="black")
+    ax.plot([0, -width*0.95], [med_l, med_l], lw=1.8, color="black")
+    ax.plot([0,  width*0.95], [med_r, med_r], lw=1.8, color="black")
 
     # means (colored lines)
     mean_l = float(np.mean(left))
@@ -152,8 +163,7 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
     ax.plot([0, -width*0.95], [mean_l, mean_l], lw=2.5, color=lc)
     ax.plot([0,  width*0.95], [mean_r, mean_r], lw=2.5, color=rc)
 
-    # top-corner labels positioned slightly below the top
-    y0, y1 = y_grid[0], y_grid[-1]
+    # top-corner labels positioned slightly below the top of the (possibly clamped) axis
     label_y = y1 - label_offset_frac * (y1 - y0)
     vendor = left_label.split()[0]   # "Vendor call Overhead" -> "Vendor"
     total  = right_label.split()[0]  # "PAPI_read() Overhead" -> "PAPI_read()"
@@ -174,12 +184,18 @@ def plot_butterfly_improved(left: np.ndarray, right: np.ndarray,
     ax.text( width*0.98, label_y, "\n".join(right_lines),
             ha="right", va="top", fontsize=11, color=rc)
 
-    ax.set_ylim(y_grid[0], y_grid[-1])
+    # Axis cosmetics
+    ax.set_ylim(y0, y1)
     ax.set_xlim(-width*1.15, width*1.15)
-    ax.set_xticks([-width*0.6,  width*0.6], [left_label, right_label])
+    ax.set_xticks([-width*0.6,  width*0.6])
+    ax.set_xticklabels([left_label, right_label])
     ax.set_ylabel(ylabel)
     ax.set_title(title, pad=8, fontsize=14)
     ax.grid(True, axis="y", alpha=0.25)
+
+    if ytick_base is not None and ytick_base > 0:
+        ax.yaxis.set_major_locator(MultipleLocator(ytick_base))
+
     return fig, ax
 
 
@@ -205,7 +221,8 @@ def plot_slope_per_metric(pairs: List[Tuple[str,float,float]],
     ax.scatter(left,  idx, s=30, label="AMDSMI")
     ax.scatter(right, idx, s=30, label="PAPI")
 
-    ax.set_yticks(idx, labels)
+    ax.set_yticks(idx)
+    ax.set_yticklabels(labels)
     ax.set_xlabel(value_label)
     ax.set_title(title)
     ax.grid(True, axis="x", alpha=0.25)
@@ -297,6 +314,15 @@ def main():
     p.add_argument("--left-label", default="Vendor call Overhead")
     p.add_argument("--right-label", default="PAPI_read() Overhead")
     p.add_argument("--out-prefix", default="overhead", help="Filename prefix for outputs.")
+
+    # NEW: y-axis controls for butterfly plot
+    p.add_argument("--ymin", type=float, default=0.0,
+                   help="Lower y-axis bound for butterfly plot (default: 0.0). Use negative to allow below zero, or pass 'nan' to auto.")
+    p.add_argument("--ymax", type=float, default=None,
+                   help="Upper y-axis bound for butterfly plot (default: auto).")
+    p.add_argument("--ytick-base", type=float, default=None,
+                   help="Major tick spacing for butterfly y-axis in µs (e.g., 50).")
+
     p.add_argument("--butterfly", action="store_true")
     p.add_argument("--slope", action="store_true")
     p.add_argument("--scatter", action="store_true")
@@ -305,6 +331,10 @@ def main():
     p.add_argument("--all", action="store_true",
                    help="Produce all plots.")
     args = p.parse_args()
+
+    # Handle "nan" as None for --ymin if user wants auto
+    if args.ymin is not None and (isinstance(args.ymin, float) and math.isnan(args.ymin)):
+        args.ymin = None
 
     df = load_metrics(args.csv)
     if args.metric_regex:
@@ -349,6 +379,9 @@ def main():
             ylabel="Time in µs",
             left_stddev=left_stddev,
             right_stddev=right_stddev,
+            ymin=args.ymin,
+            ymax=args.ymax,
+            ytick_base=args.ytick_base,
         )
         fn = f"{args.out_prefix}_butterfly.png"
         fig.savefig(fn, dpi=200)
