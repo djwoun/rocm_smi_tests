@@ -17,11 +17,14 @@
 #include <cstdlib>
 #include <cstdint>
 #include <cstring>
+#include <cctype>
 #include <string>
 #include <vector>
 #include <unordered_set>
 #include <chrono>
+#include <thread>
 #include <algorithm>
+#include <cmath>
 
 #include <papi.h>
 #include <amd_smi/amdsmi.h>
@@ -40,6 +43,7 @@ static inline bool is_space(char c){ return c==' '||c=='\t'||c=='\r'||c=='\n'; }
 // ---------- args ----------
 struct Args {
     enum Set { KEY, ALL, PCIE } which = KEY;
+    enum Version { BASELINE, MI300A } version = BASELINE;
     size_t iters = 100;
     int device = 0;
     std::string out = "overhead.csv";
@@ -47,6 +51,7 @@ struct Args {
     bool verify = false;
     bool papi_only = false;
     bool smi_only = false;
+    unsigned stall_ms = 0;
 };
 static bool parse_args(int argc, char** argv, Args& a) {
     for (int i=1;i<argc;i++) {
@@ -65,6 +70,26 @@ static bool parse_args(int argc, char** argv, Args& a) {
         else if (s=="--verify"  ) a.verify = true;
         else if (s=="--papi-only") a.papi_only = true;
         else if (s=="--smi-only" ) a.smi_only = true;
+        else if (s=="--stall"  && i+1<argc) {
+            char* endptr = nullptr;
+            long val = strtol(argv[++i], &endptr, 10);
+            if (!endptr || *endptr) { fprintf(stderr, "Invalid stall value '%s'\n", argv[i]); return false; }
+            if (val < 0) { fprintf(stderr, "Stall must be non-negative\n"); return false; }
+            a.stall_ms = (unsigned)val;
+        }
+        else if (s=="--version" && i+1<argc) {
+            std::string v = argv[++i];
+            std::transform(v.begin(), v.end(), v.begin(),
+                           [](unsigned char c){ return (char)std::tolower(c); });
+            if (v=="3a" || v=="mi300a" || v=="mi-300a") {
+                a.version = Args::MI300A;
+            } else if (v=="default" || v=="baseline" || v=="generic") {
+                a.version = Args::BASELINE;
+            } else {
+                fprintf(stderr, "Unknown version '%s' (default|3a)\n", v.c_str());
+                return false;
+            }
+        }
         else { fprintf(stderr,"Unknown arg: %s\n", s.c_str()); return false; }
     }
     return true;
@@ -72,21 +97,39 @@ static bool parse_args(int argc, char** argv, Args& a) {
 
 // ---------- CSV ----------
 static void write_csv_header(FILE* f) {
-    fprintf(f, "metric,source,api,iters,ok_count,min_us,avg_us,max_us,notes\n");
+    fprintf(f, "metric,source,api,iters,ok_count,min_us,avg_us,max_us,stddev_us,notes\n");
 }
 struct Stat {
     size_t n = 0, ok_count = 0;
     uint64_t min_ns = UINT64_MAX, max_ns = 0;
-    __int128 sum_ns = 0;
+    long double sum_ns = 0.0L;
+    long double sum_sq_ns = 0.0L;
 };
 static void write_csv_row(FILE* f, const char* source, const char* metric, const char* api,
                           size_t iters, const Stat& s, const std::string& notes) {
-    double min_us = (s.min_ns==UINT64_MAX?0.0: (double)s.min_ns/1000.0);
-    double max_us = (double)s.max_ns/1000.0;
-    double avg_us = (s.ok_count? (double)((long double)s.sum_ns/(long double)s.ok_count)/1000.0 : 0.0);
-    fprintf(f, "%s,%s,%s,%zu,%zu,%.3f,%.3f,%.3f,%s\n",
-            metric, source, api, iters, s.ok_count, min_us, avg_us, max_us,
+    double min_us = (s.ok_count ? (double)s.min_ns/1000.0 : 0.0);
+    double max_us = (s.ok_count ? (double)s.max_ns/1000.0 : 0.0);
+    double avg_ns = (s.ok_count ? (double)(s.sum_ns / (long double)s.ok_count) : 0.0);
+    double avg_us = avg_ns / 1000.0;
+    double stddev_us = 0.0;
+    if (s.ok_count > 1) {
+        long double mean_ns = s.sum_ns / (long double)s.ok_count;
+        long double mean_sq_ns = s.sum_sq_ns / (long double)s.ok_count;
+        long double var_ns = mean_sq_ns - mean_ns * mean_ns;
+        if (var_ns < 0.0L) var_ns = 0.0L;
+        stddev_us = std::sqrt((double)var_ns) / 1000.0;
+    }
+    fprintf(f, "%s,%s,%s,%zu,%zu,%.3f,%.3f,%.3f,%.3f,%s\n",
+            metric, source, api, iters, s.ok_count, min_us, avg_us, max_us, stddev_us,
             notes.c_str());
+}
+
+static void write_sample_rows(FILE* f, const std::string& metric, const char* source, const std::vector<uint64_t>& samples) {
+    if (!f || samples.empty()) return;
+    for (size_t i = 0; i < samples.size(); ++i) {
+        double us = (double)samples[i] / 1000.0;
+        fprintf(f, "%s,%s,%zu,%.3f\n", metric.c_str(), source, i, us);
+    }
 }
 
 // ---------- AMD SMI discovery ----------
@@ -127,7 +170,10 @@ enum class Kind {
     CLK_SYS_CURRENT_MHZ, CLK_SYS_COUNT, CLK_SYS_LEVEL,
     PCIE_THROUGHPUT_SENT, PCIE_THROUGHPUT_RECEIVED, PCIE_THROUGHPUT_MAXPKT,
     PCIE_REPLAY_COUNTER, ENERGY_CONSUMED, GPU_BDFID, NUMA_NODE,
-    GPU_ID, GPU_REVISION, GPU_SUBSYSTEM_ID
+    GPU_ID, GPU_REVISION, GPU_SUBSYSTEM_ID,
+    MEM_USAGE_GTT, ECC_TOTAL, GPU_THROTTLE_STATUS, VIOLATION_STATUS,
+    PCIE_BANDWIDTH, PCIE_REPLAY_COUNT, PCIE_NAK_SENT, PCIE_NAK_RECEIVED,
+    LINK_METRIC, PERF_LEVEL
 };
 struct MetricDef { std::string name; Kind kind; int arg=0; int arg2=0; };
 
@@ -169,6 +215,10 @@ static bool should_drop_event_all(const std::string& ev, int dev) {
     if (ev == ban) return true;
     const std::string ban2 = "rocm_smi:::clk_freq_level_2:device=" + std::to_string(dev);
     if (ev == ban2) return true;
+    const std::string ban3 = "amd_smi:::clk_freq_sys_level_2:device=" + std::to_string(dev);
+    if (ev == ban3) return true;
+    const std::string ban4 = "rocm_smi:::clk_freq_sys_level_2:device=" + std::to_string(dev);
+    if (ev == ban4) return true;
     return false;
 }
 
@@ -196,6 +246,15 @@ static std::string normalize_device(const std::string& ev, int dev) {
     }
     return out;
 }
+static bool is_temp_sensor_supported(int sensor, Args::Version ver) {
+    if (ver == Args::MI300A) {
+        switch (sensor) {
+            case 0: case 3: case 4: case 5: case 6: return false;
+            default: break;
+        }
+    }
+    return true;
+}
 static bool split_event(const std::string& ev, std::string& metric, int& device, int& sensor, bool& has_sensor) {
     size_t pfx;
     if      (starts_with(ev, "amd_smi:::"))  pfx = 10;
@@ -209,11 +268,29 @@ static bool split_event(const std::string& ev, std::string& metric, int& device,
     if (vend == vpos) return false;
     device = std::atoi(ev.substr(vpos, vend-vpos).c_str());
     has_sensor = false; sensor = 0;
+
+    int embedded_sensor = -1;
+    size_t embed_pos = metric.find("_sensor=");
+    if (embed_pos != std::string::npos) {
+        size_t num_pos = embed_pos + 8;
+        std::string num = metric.substr(num_pos);
+        bool ok = !num.empty();
+        for (char c : num) {
+            if (!std::isdigit((unsigned char)c)) { ok = false; break; }
+        }
+        if (ok) embedded_sensor = std::atoi(num.c_str());
+        metric.resize(embed_pos);
+    }
+
     size_t spos = ev.find(":sensor=", vend);
     if (spos != std::string::npos) {
         size_t sv = spos + 8, se = sv;
         while (se < ev.size() && std::isdigit((unsigned char)ev[se])) ++se;
         if (se > sv) { sensor = std::atoi(ev.substr(sv, se-sv).c_str()); has_sensor = true; }
+    }
+    if (!has_sensor && embedded_sensor >= 0) {
+        sensor = embedded_sensor;
+        has_sensor = true;
     }
     return true;
 }
@@ -246,28 +323,89 @@ static bool classify_event(const std::string& ev, MetricDef& out) {
     else if (metric=="mm_activity")  { out.kind = Kind::MM_ACTIVITY;  return true; }
     if      (metric=="mem_total_VRAM"){ out.kind = Kind::VRAM_TOTAL; return true; }
     else if (metric=="mem_usage_VRAM"){ out.kind = Kind::VRAM_USED;  return true; }
+    else if (metric=="mem_usage_GTT"){ out.kind = Kind::MEM_USAGE_GTT; return true; }
+    else if (metric=="ecc_total_correctable"){ out.kind = Kind::ECC_TOTAL; out.arg = 0; return true; }
+    else if (metric=="ecc_total_uncorrectable"){ out.kind = Kind::ECC_TOTAL; out.arg = 1; return true; }
+    else if (metric=="ecc_total_deferred"){ out.kind = Kind::ECC_TOTAL; out.arg = 2; return true; }
     if      (metric=="power_average") { out.kind = Kind::POWER_AVG_W;  return true; }
-    else if (metric=="power_cap_current")   { out.kind = Kind::POWER_CAP_CUR; return true; }
+    else if (metric=="power_cap_current" || metric=="power_cap")   { out.kind = Kind::POWER_CAP_CUR; return true; }
     else if (metric=="power_cap_range_min") { out.kind = Kind::POWER_CAP_MIN; return true; }
     else if (metric=="power_cap_range_max") { out.kind = Kind::POWER_CAP_MAX; return true; }
-    if      (metric=="clk_freq_current") { out.kind = Kind::CLK_SYS_CURRENT_MHZ; return true; }
-    else if (metric=="clk_freq_count")   { out.kind = Kind::CLK_SYS_COUNT;       return true; }
-    else if (starts_with(metric, "clk_freq_level_")) { out.kind = Kind::CLK_SYS_LEVEL; out.arg2 = std::atoi(metric.c_str()+std::strlen("clk_freq_level_")); return true; }
+    if      (metric=="clk_freq_current" || metric=="clk_freq_sys_current") { out.kind = Kind::CLK_SYS_CURRENT_MHZ; out.arg = (int)AMDSMI_CLK_TYPE_SYS; return true; }
+    else if (metric=="clk_freq_gfx_current") { out.kind = Kind::CLK_SYS_CURRENT_MHZ; out.arg = (int)AMDSMI_CLK_TYPE_GFX; return true; }
+    else if (metric=="clk_freq_mem_current") { out.kind = Kind::CLK_SYS_CURRENT_MHZ; out.arg = (int)AMDSMI_CLK_TYPE_MEM; return true; }
+    else if (metric=="clk_freq_soc_current") { out.kind = Kind::CLK_SYS_CURRENT_MHZ; out.arg = (int)AMDSMI_CLK_TYPE_SOC; return true; }
+    else if (metric=="clk_freq_df_current")  { out.kind = Kind::CLK_SYS_CURRENT_MHZ; out.arg = (int)AMDSMI_CLK_TYPE_DF;  return true; }
+    else if (metric=="clk_freq_count"   || metric=="clk_freq_sys_count")   { out.kind = Kind::CLK_SYS_COUNT;       out.arg = (int)AMDSMI_CLK_TYPE_SYS; return true; }
+    else if (metric=="clk_freq_gfx_count")   { out.kind = Kind::CLK_SYS_COUNT; out.arg = (int)AMDSMI_CLK_TYPE_GFX; return true; }
+    else if (metric=="clk_freq_mem_count")   { out.kind = Kind::CLK_SYS_COUNT; out.arg = (int)AMDSMI_CLK_TYPE_MEM; return true; }
+    else if (metric=="clk_freq_soc_count")   { out.kind = Kind::CLK_SYS_COUNT; out.arg = (int)AMDSMI_CLK_TYPE_SOC; return true; }
+    else if (metric=="clk_freq_df_count")    { out.kind = Kind::CLK_SYS_COUNT; out.arg = (int)AMDSMI_CLK_TYPE_DF;  return true; }
+    else if (starts_with(metric, "clk_freq_level_")) {
+        out.kind = Kind::CLK_SYS_LEVEL;
+        out.arg = (int)AMDSMI_CLK_TYPE_SYS;
+        out.arg2 = std::atoi(metric.c_str()+std::strlen("clk_freq_level_"));
+        return true;
+    } else if (starts_with(metric, "clk_freq_sys_level_")) {
+        out.kind = Kind::CLK_SYS_LEVEL;
+        out.arg = (int)AMDSMI_CLK_TYPE_SYS;
+        out.arg2 = std::atoi(metric.c_str()+std::strlen("clk_freq_sys_level_"));
+        return true;
+    }
+    else if (starts_with(metric, "clk_freq_gfx_level_")) {
+        out.kind = Kind::CLK_SYS_LEVEL;
+        out.arg = (int)AMDSMI_CLK_TYPE_GFX;
+        out.arg2 = std::atoi(metric.c_str()+std::strlen("clk_freq_gfx_level_"));
+        return true;
+    }
+    else if (starts_with(metric, "clk_freq_mem_level_")) {
+        out.kind = Kind::CLK_SYS_LEVEL;
+        out.arg = (int)AMDSMI_CLK_TYPE_MEM;
+        out.arg2 = std::atoi(metric.c_str()+std::strlen("clk_freq_mem_level_"));
+        return true;
+    }
+    else if (starts_with(metric, "clk_freq_soc_level_")) {
+        out.kind = Kind::CLK_SYS_LEVEL;
+        out.arg = (int)AMDSMI_CLK_TYPE_SOC;
+        out.arg2 = std::atoi(metric.c_str()+std::strlen("clk_freq_soc_level_"));
+        return true;
+    }
+    else if (starts_with(metric, "clk_freq_df_level_")) {
+        out.kind = Kind::CLK_SYS_LEVEL;
+        out.arg = (int)AMDSMI_CLK_TYPE_DF;
+        out.arg2 = std::atoi(metric.c_str()+std::strlen("clk_freq_df_level_"));
+        return true;
+    }
     if      (metric=="pci_throughput_sent")      { out.kind = Kind::PCIE_THROUGHPUT_SENT;     return true; }
     else if (metric=="pci_throughput_received")  { out.kind = Kind::PCIE_THROUGHPUT_RECEIVED; return true; }
     else if (metric=="pci_throughput_max_packet"){ out.kind = Kind::PCIE_THROUGHPUT_MAXPKT;   return true; }
     else if (metric=="pci_replay_counter")       { out.kind = Kind::PCIE_REPLAY_COUNTER;      return true; }
+    else if (metric=="pcie_bandwidth")           { out.kind = Kind::PCIE_BANDWIDTH; out.arg = 7; return true; }
+    else if (metric=="pcie_replay_count")        { out.kind = Kind::PCIE_REPLAY_COUNT; out.arg = 8; return true; }
+    else if (metric=="pcie_nak_sent_count")      { out.kind = Kind::PCIE_NAK_SENT; out.arg = 11; return true; }
+    else if (metric=="pcie_nak_received_count")  { out.kind = Kind::PCIE_NAK_RECEIVED; out.arg = 12; return true; }
     if (metric=="energy_consumed") { out.kind = Kind::ENERGY_CONSUMED; return true; }
     if (metric=="bdfid" || metric=="bdf_id") { out.kind = Kind::GPU_BDFID; return true; }
     if (metric=="numa_node") { out.kind = Kind::NUMA_NODE; return true; }
     if (metric=="gpu_id") { out.kind = Kind::GPU_ID; return true; }
     if (metric=="gpu_revision") { out.kind = Kind::GPU_REVISION; return true; }
     if (metric=="gpu_subsystem_id") { out.kind = Kind::GPU_SUBSYSTEM_ID; return true; }
+    if (metric=="gpu_throttle_status") { out.kind = Kind::GPU_THROTTLE_STATUS; return true; }
+    if (metric=="xgmi_read_kb") { out.kind = Kind::LINK_METRIC; out.arg = 0; out.arg2 = (int)AMDSMI_LINK_TYPE_XGMI; return true; }
+    if (metric=="xgmi_write_kb") { out.kind = Kind::LINK_METRIC; out.arg = 1; out.arg2 = (int)AMDSMI_LINK_TYPE_XGMI; return true; }
+    if (metric=="perf_level") { out.kind = Kind::PERF_LEVEL; return true; }
     return false;
 }
 
+static bool is_metric_supported(const MetricDef& m, Args::Version ver) {
+    if (ver == Args::MI300A && m.kind == Kind::TEMP_METRIC) {
+        if (!is_temp_sensor_supported(m.arg, ver)) return false;
+    }
+    return true;
+}
+
 // ---------- PAPI timing ----------
-static Stat time_papi_read_one_metric(const std::string& event, size_t iters, bool verify, std::string& notes) {
+static Stat time_papi_read_one_metric(const std::string& event, size_t iters, bool verify, unsigned stall_ms, std::string& notes, std::vector<uint64_t>* samples) {
     int EventSet = PAPI_NULL; long long tmp = 0; int st;
     st = PAPI_create_eventset(&EventSet);
     if (st != PAPI_OK) { notes = PAPI_strerror(st); return Stat{}; }
@@ -288,15 +426,19 @@ static Stat time_papi_read_one_metric(const std::string& event, size_t iters, bo
         int rc = PAPI_read(EventSet, &tmp);
         uint64_t dt = now_ns() - t0;
 
-        s.min_ns = std::min(s.min_ns, dt);
-        s.max_ns = std::max(s.max_ns, dt);
-        s.sum_ns += dt;
-
         if (rc == PAPI_OK) {
-            s.ok_count++;
             if (verify && !printed) { printf("[VERIFY][PAPI] %s = %lld\n", event.c_str(), tmp); printed = true; }
             if (PAPI_reset(EventSet) != PAPI_OK) { PAPI_stop(EventSet, &tmp); PAPI_start(EventSet); }
-        } else if (notes.empty()) notes = PAPI_strerror(rc);
+            s.ok_count++;
+            s.min_ns = std::min(s.min_ns, dt);
+            s.max_ns = std::max(s.max_ns, dt);
+            s.sum_ns += (long double)dt;
+            s.sum_sq_ns += (long double)dt * (long double)dt;
+            if (samples) samples->push_back(dt);
+        } else if (notes.empty()) {
+            notes = PAPI_strerror(rc);
+        }
+        if (stall_ms) std::this_thread::sleep_for(std::chrono::milliseconds(stall_ms));
     }
 
     PAPI_stop(EventSet, &tmp);
@@ -306,7 +448,7 @@ static Stat time_papi_read_one_metric(const std::string& event, size_t iters, bo
 }
 
 // ---------- AMD SMI timing ----------
-static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, size_t iters, bool verify, std::string& notes) {
+static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, size_t iters, bool verify, unsigned stall_ms, std::string& notes, std::vector<uint64_t>* samples) {
     static const amdsmi_temperature_type_t* TMP = kTempSensorMap;
 
     // warmup
@@ -318,23 +460,33 @@ static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, s
             case Kind::MM_ACTIVITY: { amdsmi_engine_usage_t u{}; (void)amdsmi_get_gpu_activity(h, &u); } break;
             case Kind::VRAM_TOTAL:  { uint64_t x=0; (void)amdsmi_get_gpu_memory_total(h, AMDSMI_MEM_TYPE_VRAM, &x); } break;
             case Kind::VRAM_USED:   { uint64_t x=0; (void)amdsmi_get_gpu_memory_usage(h, AMDSMI_MEM_TYPE_VRAM, &x); } break;
+            case Kind::MEM_USAGE_GTT: { uint64_t x=0; (void)amdsmi_get_gpu_memory_usage(h, AMDSMI_MEM_TYPE_GTT, &x); } break;
+            case Kind::ECC_TOTAL: { amdsmi_error_count_t ec{}; (void)amdsmi_get_gpu_total_ecc_count(h, &ec); } break;
             case Kind::POWER_AVG_W: { amdsmi_power_info_t p{}; (void)amdsmi_get_power_info(h, &p); } break;
             case Kind::POWER_CAP_CUR:
             case Kind::POWER_CAP_MIN:
             case Kind::POWER_CAP_MAX: { amdsmi_power_cap_info_t pc{}; (void)amdsmi_get_power_cap_info(h, 0, &pc); } break;
             case Kind::CLK_SYS_CURRENT_MHZ:
             case Kind::CLK_SYS_COUNT:
-            case Kind::CLK_SYS_LEVEL: { amdsmi_frequencies_t f{}; (void)amdsmi_get_clk_freq(h, AMDSMI_CLK_TYPE_SYS, &f); } break;
+            case Kind::CLK_SYS_LEVEL: { amdsmi_frequencies_t f{}; (void)amdsmi_get_clk_freq(h, (amdsmi_clk_type_t)(m.arg>=0 ? m.arg : (int)AMDSMI_CLK_TYPE_SYS), &f); } break;
             case Kind::PCIE_THROUGHPUT_SENT:
             case Kind::PCIE_THROUGHPUT_RECEIVED:
             case Kind::PCIE_THROUGHPUT_MAXPKT: { uint64_t a=0,b=0,c=0; (void)amdsmi_get_gpu_pci_throughput(h, &a,&b,&c); } break;
             case Kind::PCIE_REPLAY_COUNTER: { uint64_t c=0; (void)amdsmi_get_gpu_pci_replay_counter(h,&c); } break;
+            case Kind::PCIE_BANDWIDTH:
+            case Kind::PCIE_REPLAY_COUNT:
+            case Kind::PCIE_NAK_SENT:
+            case Kind::PCIE_NAK_RECEIVED: { amdsmi_pcie_info_t info{}; (void)amdsmi_get_pcie_info(h, &info); } break;
             case Kind::ENERGY_CONSUMED: { uint64_t e=0, ts=0; float res=0; (void)amdsmi_get_energy_count(h,&e,&res,&ts); } break;
             case Kind::GPU_BDFID: { uint64_t id=0; (void)amdsmi_get_gpu_bdf_id(h,&id); } break;
             case Kind::NUMA_NODE: { int32_t n=0; (void)amdsmi_get_gpu_topo_numa_affinity(h,&n); } break;
             case Kind::GPU_ID: { uint16_t v=0; (void)amdsmi_get_gpu_id(h,&v); } break;
             case Kind::GPU_REVISION: { uint16_t r=0; (void)amdsmi_get_gpu_revision(h,&r); } break;
             case Kind::GPU_SUBSYSTEM_ID: { uint16_t s=0; (void)amdsmi_get_gpu_subsystem_id(h,&s); } break;
+            case Kind::GPU_THROTTLE_STATUS: { amdsmi_gpu_metrics_t metrics{}; (void)amdsmi_get_gpu_metrics_info(h, &metrics); } break;
+            case Kind::VIOLATION_STATUS: { amdsmi_violation_status_t info{}; (void)amdsmi_get_violation_status(h, &info); } break;
+            case Kind::LINK_METRIC: { amdsmi_link_metrics_t lm{}; (void)amdsmi_get_link_metrics(h, &lm); } break;
+            case Kind::PERF_LEVEL: { amdsmi_dev_perf_level_t lvl = AMDSMI_DEV_PERF_LEVEL_UNKNOWN; (void)amdsmi_get_gpu_perf_level(h, &lvl); } break;
         }
     }
 
@@ -354,6 +506,25 @@ static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, s
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = %llu bytes\n", m.name.c_str(), (unsigned long long)x); printed = true; } } break;
             case Kind::VRAM_USED:   { uint64_t x=0; rc = amdsmi_get_gpu_memory_usage(h, AMDSMI_MEM_TYPE_VRAM, &x);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = %llu bytes\n", m.name.c_str(), (unsigned long long)x); printed = true; } } break;
+            case Kind::MEM_USAGE_GTT: { uint64_t x=0; rc = amdsmi_get_gpu_memory_usage(h, AMDSMI_MEM_TYPE_GTT, &x);
+                if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = %llu bytes\n", m.name.c_str(), (unsigned long long)x); printed = true; } } break;
+            case Kind::ECC_TOTAL: {
+                amdsmi_error_count_t ec{};
+                rc = amdsmi_get_gpu_total_ecc_count(h, &ec);
+                if (rc == AMDSMI_STATUS_SUCCESS) {
+                    uint64_t value = 0;
+                    switch (m.arg) {
+                        case 0: value = ec.correctable_count; break;
+                        case 1: value = ec.uncorrectable_count; break;
+                        case 2: value = ec.deferred_count; break;
+                        default: break;
+                    }
+                    if (verify && !printed) {
+                        printf("[VERIFY][AMDSMI] %s = %llu\n", m.name.c_str(), (unsigned long long)value);
+                        printed = true;
+                    }
+                }
+            } break;
             case Kind::POWER_AVG_W: { amdsmi_power_info_t p{}; rc = amdsmi_get_power_info(h, &p);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = avg %.3f W\n", m.name.c_str(), (double)p.average_socket_power); printed = true; } } break;
             case Kind::POWER_CAP_CUR:
@@ -361,18 +532,45 @@ static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, s
             case Kind::POWER_CAP_MAX: { amdsmi_power_cap_info_t pc{}; rc = amdsmi_get_power_cap_info(h, 0, &pc);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { uint64_t v=(m.kind==Kind::POWER_CAP_CUR)?pc.power_cap:(m.kind==Kind::POWER_CAP_MIN)?pc.min_power_cap:pc.max_power_cap;
                     printf("[VERIFY][AMDSMI] %s = %llu W\n", m.name.c_str(), (unsigned long long)v); printed = true; } } break;
-            case Kind::CLK_SYS_CURRENT_MHZ: { amdsmi_frequencies_t f{}; rc = amdsmi_get_clk_freq(h, AMDSMI_CLK_TYPE_SYS, &f);
+            case Kind::CLK_SYS_CURRENT_MHZ: { amdsmi_frequencies_t f{}; amdsmi_clk_type_t type = (amdsmi_clk_type_t)(m.arg>=0 ? m.arg : (int)AMDSMI_CLK_TYPE_SYS);
+                rc = amdsmi_get_clk_freq(h, type, &f);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS && f.num_supported>0 && f.current<f.num_supported) {
                     double mhz = (double)f.frequency[f.current]/1.0e6; printf("[VERIFY][AMDSMI] %s = %.2f MHz\n", m.name.c_str(), mhz); printed = true; } } break;
-            case Kind::CLK_SYS_COUNT: { amdsmi_frequencies_t f{}; rc = amdsmi_get_clk_freq(h, AMDSMI_CLK_TYPE_SYS, &f);
+            case Kind::CLK_SYS_COUNT: { amdsmi_frequencies_t f{}; amdsmi_clk_type_t type = (amdsmi_clk_type_t)(m.arg>=0 ? m.arg : (int)AMDSMI_CLK_TYPE_SYS);
+                rc = amdsmi_get_clk_freq(h, type, &f);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = %u levels\n", m.name.c_str(), f.num_supported); printed = true; } } break;
-            case Kind::CLK_SYS_LEVEL: { amdsmi_frequencies_t f{}; rc = amdsmi_get_clk_freq(h, AMDSMI_CLK_TYPE_SYS, &f);
+            case Kind::CLK_SYS_LEVEL: { amdsmi_frequencies_t f{}; amdsmi_clk_type_t type = (amdsmi_clk_type_t)(m.arg>=0 ? m.arg : (int)AMDSMI_CLK_TYPE_SYS);
+                rc = amdsmi_get_clk_freq(h, type, &f);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS && (uint32_t)m.arg2<f.num_supported) {
                     double mhz=(double)f.frequency[m.arg2]/1.0e6; printf("[VERIFY][AMDSMI] %s = %.2f MHz\n", m.name.c_str(), mhz); printed = true; } } break;
             case Kind::PCIE_THROUGHPUT_SENT:
             case Kind::PCIE_THROUGHPUT_RECEIVED:
             case Kind::PCIE_THROUGHPUT_MAXPKT: { uint64_t a=0,b=0,c=0; rc = amdsmi_get_gpu_pci_throughput(h, &a,&b,&c); } break;
             case Kind::PCIE_REPLAY_COUNTER: { uint64_t c=0; rc = amdsmi_get_gpu_pci_replay_counter(h, &c); } break;
+            case Kind::PCIE_BANDWIDTH:
+            case Kind::PCIE_REPLAY_COUNT:
+            case Kind::PCIE_NAK_SENT:
+            case Kind::PCIE_NAK_RECEIVED: {
+                amdsmi_pcie_info_t info{};
+                rc = amdsmi_get_pcie_info(h, &info);
+                if (rc == AMDSMI_STATUS_SUCCESS) {
+                    uint64_t value = 0;
+                    switch (m.kind) {
+                        case Kind::PCIE_BANDWIDTH:     value = info.pcie_metric.pcie_bandwidth; break;
+                        case Kind::PCIE_REPLAY_COUNT:  value = info.pcie_metric.pcie_replay_count; break;
+                        case Kind::PCIE_NAK_SENT:      value = info.pcie_metric.pcie_nak_sent_count; break;
+                        case Kind::PCIE_NAK_RECEIVED:  value = info.pcie_metric.pcie_nak_received_count; break;
+                        default: break;
+                    }
+                    if (verify && !printed) {
+                        if (m.kind == Kind::PCIE_BANDWIDTH)
+                            printf("[VERIFY][AMDSMI] %s = %llu Mb/s\n", m.name.c_str(), (unsigned long long)value);
+                        else
+                            printf("[VERIFY][AMDSMI] %s = %llu\n", m.name.c_str(), (unsigned long long)value);
+                        printed = true;
+                    }
+                }
+            } break;
             case Kind::ENERGY_CONSUMED: { uint64_t e=0, ts=0; float res=0; rc = amdsmi_get_energy_count(h, &e, &res, &ts);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = %llu (res=%.6f)\n", m.name.c_str(), (unsigned long long)e, (double)res); printed = true; } } break;
             case Kind::GPU_BDFID: { uint64_t b=0; rc = amdsmi_get_gpu_bdf_id(h, &b); } break;
@@ -380,23 +578,101 @@ static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, s
             case Kind::GPU_ID: { uint16_t v=0; rc = amdsmi_get_gpu_id(h, &v); } break;
             case Kind::GPU_REVISION: { uint16_t r=0; rc = amdsmi_get_gpu_revision(h, &r); } break;
             case Kind::GPU_SUBSYSTEM_ID: { uint16_t s=0; rc = amdsmi_get_gpu_subsystem_id(h, &s); } break;
+            case Kind::GPU_THROTTLE_STATUS: {
+                amdsmi_gpu_metrics_t metrics{};
+                rc = amdsmi_get_gpu_metrics_info(h, &metrics);
+                if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) {
+                    printf("[VERIFY][AMDSMI] %s = 0x%08x\n", m.name.c_str(), metrics.throttle_status);
+                    printed = true;
+                }
+            } break;
+            case Kind::VIOLATION_STATUS: {
+                amdsmi_violation_status_t info{};
+                rc = amdsmi_get_violation_status(h, &info);
+                if (rc == AMDSMI_STATUS_SUCCESS) {
+                    uint64_t value = 0;
+                    switch (m.arg2) {
+                        case 0: value = info.acc_ppt_pwr; break;
+                        case 1: value = info.acc_socket_thrm; break;
+                        case 2: value = info.acc_vr_thrm; break;
+                        case 3: value = info.per_ppt_pwr; break;
+                        case 4: value = info.per_socket_thrm; break;
+                        case 5: value = info.per_vr_thrm; break;
+                        case 6: value = info.active_ppt_pwr; break;
+                        case 7: value = info.active_socket_thrm; break;
+                        case 8: value = info.active_vr_thrm; break;
+                        default: break;
+                    }
+                    if (verify && !printed) {
+                        if (m.arg2 == 3 || m.arg2 == 4 || m.arg2 == 5)
+                            printf("[VERIFY][AMDSMI] %s = %llu %%\n", m.name.c_str(), (unsigned long long)value);
+                        else
+                            printf("[VERIFY][AMDSMI] %s = %llu\n", m.name.c_str(), (unsigned long long)value);
+                        printed = true;
+                    }
+                }
+            } break;
+            case Kind::LINK_METRIC: {
+                amdsmi_link_metrics_t lm{};
+                rc = amdsmi_get_link_metrics(h, &lm);
+                if (rc == AMDSMI_STATUS_SUCCESS) {
+                    uint32_t type = (m.arg2 >= 0) ? (uint32_t)m.arg2 : 0u;
+                    uint32_t count = std::min(lm.num_links, (uint32_t)AMDSMI_MAX_NUM_XGMI_PHYSICAL_LINK);
+                    uint64_t total = 0;
+                    for (uint32_t i=0;i<count;++i) {
+                        if (type != 0 && lm.links[i].link_type != (amdsmi_link_type_t)type) continue;
+                        switch (m.arg) {
+                            case 0: total += lm.links[i].read; break;
+                            case 1: total += lm.links[i].write; break;
+                            case 2: total += lm.links[i].bit_rate; break;
+                            case 3: total += lm.links[i].max_bandwidth; break;
+                            default: break;
+                        }
+                    }
+                    if (verify && !printed) {
+                        if (m.arg == 0 || m.arg == 1)
+                            printf("[VERIFY][AMDSMI] %s = %llu KB\n", m.name.c_str(), (unsigned long long)total);
+                        else
+                            printf("[VERIFY][AMDSMI] %s = %llu\n", m.name.c_str(), (unsigned long long)total);
+                        printed = true;
+                    }
+                }
+            } break;
+            case Kind::PERF_LEVEL: {
+                amdsmi_dev_perf_level_t level = AMDSMI_DEV_PERF_LEVEL_UNKNOWN;
+                rc = amdsmi_get_gpu_perf_level(h, &level);
+                if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) {
+                    printf("[VERIFY][AMDSMI] %s = %d\n", m.name.c_str(), (int)level);
+                    printed = true;
+                }
+            } break;
         }
         uint64_t dt = now_ns() - t0;
-        s.min_ns = std::min(s.min_ns, dt);
-        s.max_ns = std::max(s.max_ns, dt);
-        s.sum_ns += dt;
-        if (rc == AMDSMI_STATUS_SUCCESS) s.ok_count++; else if (notes.empty()) notes = "non-OK AMDSMI status";
+        if (rc == AMDSMI_STATUS_SUCCESS) {
+            s.ok_count++;
+            s.min_ns = std::min(s.min_ns, dt);
+            s.max_ns = std::max(s.max_ns, dt);
+            s.sum_ns += (long double)dt;
+            s.sum_sq_ns += (long double)dt * (long double)dt;
+            if (samples) samples->push_back(dt);
+        } else if (notes.empty()) {
+            notes = "non-OK AMDSMI status";
+        }
+        if (stall_ms) std::this_thread::sleep_for(std::chrono::milliseconds(stall_ms));
     }
     return s;
 }
 
 // ---------- default/key/pcie sets ----------
-static std::vector<MetricDef> key_metrics_for_device(int dev) {
+static std::vector<MetricDef> key_metrics_for_device(int dev, Args::Version ver) {
     char buf[256];
     auto N = [&](const char* fmt)->std::string{ std::snprintf(buf,sizeof(buf),fmt,dev); return std::string(buf); };
     std::vector<MetricDef> v;
 
-    for (int s=0;s<8;s++) v.push_back({ N(("amd_smi:::temp_current:device=%d:sensor="+std::to_string(s)).c_str()), Kind::TEMP_METRIC, s, (int)AMDSMI_TEMP_CURRENT });
+    for (int s=0;s<8;s++) {
+        if (!is_temp_sensor_supported(s, ver)) continue;
+        v.push_back({ N(("amd_smi:::temp_current_sensor="+std::to_string(s)+":device=%d").c_str()), Kind::TEMP_METRIC, s, (int)AMDSMI_TEMP_CURRENT });
+    }
 
     v.push_back({ N("amd_smi:::gfx_activity:device=%d"), Kind::GFX_ACTIVITY, 0 });
     v.push_back({ N("amd_smi:::umc_activity:device=%d"), Kind::UMC_ACTIVITY, 0 });
@@ -404,11 +680,38 @@ static std::vector<MetricDef> key_metrics_for_device(int dev) {
 
     v.push_back({ N("amd_smi:::mem_total_VRAM:device=%d"), Kind::VRAM_TOTAL, 0 });
     v.push_back({ N("amd_smi:::mem_usage_VRAM:device=%d"), Kind::VRAM_USED,  0 });
+    v.push_back({ N("amd_smi:::mem_usage_GTT:device=%d"), Kind::MEM_USAGE_GTT, 0 });
 
     v.push_back({ N("amd_smi:::power_average:device=%d"), Kind::POWER_AVG_W, 0 });
+    v.push_back({ N("amd_smi:::power_cap:device=%d"), Kind::POWER_CAP_CUR, 0 });
 
-    v.push_back({ N("amd_smi:::clk_freq_current:device=%d"), Kind::CLK_SYS_CURRENT_MHZ, 0 });
-    v.push_back({ N("amd_smi:::clk_freq_count:device=%d"),   Kind::CLK_SYS_COUNT, 0 });
+    v.push_back({ N("amd_smi:::energy_consumed:device=%d"), Kind::ENERGY_CONSUMED, 0 });
+    v.push_back({ N("amd_smi:::gpu_throttle_status:device=%d"), Kind::GPU_THROTTLE_STATUS, 0 });
+
+    v.push_back({ N("amd_smi:::clk_freq_sys_current:device=%d"), Kind::CLK_SYS_CURRENT_MHZ, (int)AMDSMI_CLK_TYPE_SYS });
+    v.push_back({ N("amd_smi:::clk_freq_gfx_current:device=%d"), Kind::CLK_SYS_CURRENT_MHZ, (int)AMDSMI_CLK_TYPE_GFX });
+    v.push_back({ N("amd_smi:::clk_freq_mem_current:device=%d"), Kind::CLK_SYS_CURRENT_MHZ, (int)AMDSMI_CLK_TYPE_MEM });
+    v.push_back({ N("amd_smi:::clk_freq_soc_current:device=%d"), Kind::CLK_SYS_CURRENT_MHZ, (int)AMDSMI_CLK_TYPE_SOC });
+    v.push_back({ N("amd_smi:::clk_freq_df_current:device=%d"),  Kind::CLK_SYS_CURRENT_MHZ, (int)AMDSMI_CLK_TYPE_DF });
+    v.push_back({ N("amd_smi:::clk_freq_sys_count:device=%d"),   Kind::CLK_SYS_COUNT, (int)AMDSMI_CLK_TYPE_SYS });
+
+    v.push_back({ N("amd_smi:::pcie_bandwidth:device=%d"), Kind::PCIE_BANDWIDTH, 0 });
+    v.push_back({ N("amd_smi:::pcie_replay_count:device=%d"), Kind::PCIE_REPLAY_COUNT, 0 });
+    v.push_back({ N("amd_smi:::pcie_nak_sent_count:device=%d"), Kind::PCIE_NAK_SENT, 0 });
+    v.push_back({ N("amd_smi:::pcie_nak_received_count:device=%d"), Kind::PCIE_NAK_RECEIVED, 0 });
+
+    v.push_back({ N("amd_smi:::xgmi_read_kb:device=%d"), Kind::LINK_METRIC, 0, (int)AMDSMI_LINK_TYPE_XGMI });
+    v.push_back({ N("amd_smi:::xgmi_write_kb:device=%d"), Kind::LINK_METRIC, 1, (int)AMDSMI_LINK_TYPE_XGMI });
+
+    v.push_back({ N("amd_smi:::ecc_total_correctable:device=%d"), Kind::ECC_TOTAL, 0 });
+    v.push_back({ N("amd_smi:::ecc_total_uncorrectable:device=%d"), Kind::ECC_TOTAL, 1 });
+    v.push_back({ N("amd_smi:::ecc_total_deferred:device=%d"), Kind::ECC_TOTAL, 2 });
+
+    v.push_back({ N("amd_smi:::temp_critical_sensor=7:device=%d"), Kind::TEMP_METRIC, 7, (int)AMDSMI_TEMP_CRITICAL });
+    v.push_back({ N("amd_smi:::temp_emergency_sensor=7:device=%d"), Kind::TEMP_METRIC, 7, (int)AMDSMI_TEMP_EMERGENCY });
+    v.push_back({ N("amd_smi:::temp_max_sensor=7:device=%d"), Kind::TEMP_METRIC, 7, (int)AMDSMI_TEMP_MAX });
+
+    v.push_back({ N("amd_smi:::perf_level:device=%d"), Kind::PERF_LEVEL, 0 });
 
     return v;
 }
@@ -428,7 +731,7 @@ int main(int argc, char** argv) {
     // Collect metrics according to set
     std::vector<MetricDef> metrics;
     if (a.which == Args::KEY) {
-        metrics = key_metrics_for_device(a.device);
+        metrics = key_metrics_for_device(a.device, a.version);
     } else if (a.which == Args::PCIE) {
         metrics = pcie_metrics_for_device(a.device);
     } else {
@@ -436,11 +739,11 @@ int main(int argc, char** argv) {
         std::vector<std::string> names = parse_events_file_all(a.events_path, a.device);
         std::unordered_set<std::string> dedup;
         for (auto &ev : names) if (!dedup.count(ev)) {
-            MetricDef m; if (classify_event(ev, m)) { metrics.push_back(m); dedup.insert(ev); }
+            MetricDef m; if (classify_event(ev, m) && is_metric_supported(m, a.version)) { metrics.push_back(m); dedup.insert(ev); }
         }
         if (metrics.empty()) {
             fprintf(stderr, "No events found in %s, falling back to 'key' set.\n", a.events_path.c_str());
-            metrics = key_metrics_for_device(a.device);
+            metrics = key_metrics_for_device(a.device, a.version);
         }
     }
     if (metrics.empty()) { fprintf(stderr, "No recognizable metrics.\n"); return 0; }
@@ -461,20 +764,36 @@ int main(int argc, char** argv) {
     FILE* csv = fopen(a.out.c_str(), "w"); if (!csv) { perror("open csv"); if(!a.papi_only) amdsmi_shut_down(); return 4; }
     write_csv_header(csv);
 
+    std::string sample_path = a.out;
+    size_t dot = sample_path.rfind(".csv");
+    if (dot != std::string::npos) sample_path.insert(dot, "_samples");
+    else sample_path += "_samples.csv";
+    FILE* samples_csv = fopen(sample_path.c_str(), "w");
+    if (samples_csv) {
+        fprintf(samples_csv, "metric,source,iteration,us\n");
+    } else {
+        perror("open samples csv");
+    }
+    bool capture_samples = (samples_csv != nullptr);
+
     for (const auto& m : metrics) {
         if (!a.smi_only) {
-            std::string notes; Stat s = time_papi_read_one_metric(m.name, a.iters, a.verify, notes);
+            std::vector<uint64_t> papi_samples;
+            std::string notes; Stat s = time_papi_read_one_metric(m.name, a.iters, a.verify, a.stall_ms, notes, capture_samples ? &papi_samples : nullptr);
             write_csv_row(csv, "PAPI", m.name.c_str(), "PAPI_read", a.iters, s, notes);
+            if (capture_samples) write_sample_rows(samples_csv, m.name, "PAPI", papi_samples);
         }
         if (!a.papi_only) {
-            std::string notes; Stat s = time_smi_one_metric(h, m, a.iters, a.verify, notes);
+            std::vector<uint64_t> smi_samples;
+            std::string notes; Stat s = time_smi_one_metric(h, m, a.iters, a.verify, a.stall_ms, notes, capture_samples ? &smi_samples : nullptr);
             const char* api =
                 (m.kind==Kind::TEMP_METRIC)              ? "amdsmi_get_temp_metric" :
                 (m.kind==Kind::GFX_ACTIVITY ||
                  m.kind==Kind::UMC_ACTIVITY ||
                  m.kind==Kind::MM_ACTIVITY)             ? "amdsmi_get_gpu_activity" :
                 (m.kind==Kind::VRAM_TOTAL)              ? "amdsmi_get_gpu_memory_total" :
-                (m.kind==Kind::VRAM_USED)               ? "amdsmi_get_gpu_memory_usage" :
+                (m.kind==Kind::VRAM_USED ||
+                 m.kind==Kind::MEM_USAGE_GTT)           ? "amdsmi_get_gpu_memory_usage" :
                 (m.kind==Kind::POWER_AVG_W)             ? "amdsmi_get_power_info" :
                 (m.kind==Kind::POWER_CAP_CUR ||
                  m.kind==Kind::POWER_CAP_MIN ||
@@ -486,17 +805,28 @@ int main(int argc, char** argv) {
                  m.kind==Kind::PCIE_THROUGHPUT_RECEIVED ||
                  m.kind==Kind::PCIE_THROUGHPUT_MAXPKT)  ? "amdsmi_get_gpu_pci_throughput" :
                 (m.kind==Kind::PCIE_REPLAY_COUNTER)     ? "amdsmi_get_gpu_pci_replay_counter" :
+                (m.kind==Kind::PCIE_BANDWIDTH ||
+                 m.kind==Kind::PCIE_REPLAY_COUNT ||
+                 m.kind==Kind::PCIE_NAK_SENT ||
+                 m.kind==Kind::PCIE_NAK_RECEIVED)       ? "amdsmi_get_pcie_info" :
                 (m.kind==Kind::ENERGY_CONSUMED)         ? "amdsmi_get_energy_count" :
                 (m.kind==Kind::GPU_BDFID)               ? "amdsmi_get_gpu_bdf_id" :
                 (m.kind==Kind::NUMA_NODE)               ? "amdsmi_get_gpu_topo_numa_affinity" :
                 (m.kind==Kind::GPU_ID)                  ? "amdsmi_get_gpu_id" :
                 (m.kind==Kind::GPU_REVISION)            ? "amdsmi_get_gpu_revision" :
-                (m.kind==Kind::GPU_SUBSYSTEM_ID)        ? "amdsmi_get_gpu_subsystem_id" : "amdsmi_*";
+                (m.kind==Kind::GPU_SUBSYSTEM_ID)        ? "amdsmi_get_gpu_subsystem_id" :
+                (m.kind==Kind::ECC_TOTAL)               ? "amdsmi_get_gpu_total_ecc_count" :
+                (m.kind==Kind::GPU_THROTTLE_STATUS)     ? "amdsmi_get_gpu_metrics_info" :
+                (m.kind==Kind::LINK_METRIC)             ? "amdsmi_get_link_metrics" :
+                (m.kind==Kind::VIOLATION_STATUS)        ? "amdsmi_get_violation_status" :
+                (m.kind==Kind::PERF_LEVEL)              ? "amdsmi_get_gpu_perf_level" : "amdsmi_*";
             write_csv_row(csv, "AMDSMI", m.name.c_str(), api, a.iters, s, notes);
+            if (capture_samples) write_sample_rows(samples_csv, m.name, "AMDSMI", smi_samples);
         }
     }
 
     fclose(csv);
+    if (samples_csv) fclose(samples_csv);
     if (!a.papi_only) amdsmi_shut_down();
     return 0;
 }
