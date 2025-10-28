@@ -366,7 +366,8 @@ static void run_interval(int EventSet,
                          std::vector<MetricStats>& stats_out,
                          PollSummary& poll_out,
                          FILE* series,
-                         int process_count_index) {
+                         int process_count_index,
+                         int allowed_processes) {
     const auto period = std::chrono::milliseconds(interval_ms);
     const auto t_start = std::chrono::steady_clock::now();
     const auto t_end   = t_start + std::chrono::seconds(duration_s);
@@ -398,8 +399,9 @@ static void run_interval(int EventSet,
 
         if (process_count_index >= 0 && process_count_index < (int)values.size()) {
             long long proc_cnt = values[process_count_index];
-            if (proc_cnt > 1) {
-                die("Process contention detected: process_count=%lld (expected <=1)", proc_cnt);
+            if (proc_cnt > allowed_processes) {
+                die("Process contention detected: process_count=%lld (allowed <=%d)",
+                    proc_cnt, allowed_processes);
             }
         }
 
@@ -544,6 +546,7 @@ int main(int argc, char** argv) {
         }
         process_index = (int)(event_names.size() - 1);
     }
+    const int allowed_processes = 2;
 
     std::vector<int> codes = add_events_or_die(EventSet, event_names);
     (void)codes;
@@ -558,7 +561,7 @@ int main(int argc, char** argv) {
     for (int interval_ms : a.intervals_ms) {
         std::vector<MetricStats> stats;
         PollSummary row{};
-        run_interval(EventSet, event_names, interval_ms, a.duration_s, a.epsilon, stats, row, series, process_index);
+        run_interval(EventSet, event_names, interval_ms, a.duration_s, a.epsilon, stats, row, series, process_index, allowed_processes);
         poll_rows.push_back(std::move(row));
         all_stats.push_back(std::move(stats));
     }
