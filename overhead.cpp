@@ -165,8 +165,9 @@ static amdsmi_processor_handle find_gpu_by_logical_index(uint32_t idx) {
 // ---------- classification ----------
 enum class Kind {
     TEMP_METRIC, GFX_ACTIVITY, UMC_ACTIVITY, MM_ACTIVITY,
+    UTIL_COUNTER_GFX,
     VRAM_TOTAL, VRAM_USED,
-    POWER_AVG_W, POWER_CAP_CUR, POWER_CAP_MIN, POWER_CAP_MAX,
+    POWER_AVG_W, POWER_CUR_W, POWER_CAP_CUR, POWER_CAP_MIN, POWER_CAP_MAX,
     CLK_SYS_CURRENT_MHZ, CLK_SYS_COUNT, CLK_SYS_LEVEL,
     PCIE_THROUGHPUT_SENT, PCIE_THROUGHPUT_RECEIVED, PCIE_THROUGHPUT_MAXPKT,
     PCIE_REPLAY_COUNTER, ENERGY_CONSUMED, GPU_BDFID, NUMA_NODE,
@@ -321,6 +322,7 @@ static bool classify_event(const std::string& ev, MetricDef& out) {
     if      (metric=="gfx_activity") { out.kind = Kind::GFX_ACTIVITY; return true; }
     else if (metric=="umc_activity") { out.kind = Kind::UMC_ACTIVITY; return true; }
     else if (metric=="mm_activity")  { out.kind = Kind::MM_ACTIVITY;  return true; }
+    else if (metric=="util_counter_gfx") { out.kind = Kind::UTIL_COUNTER_GFX; out.arg = (int)AMDSMI_COARSE_GRAIN_GFX_ACTIVITY; return true; }
     if      (metric=="mem_total_VRAM"){ out.kind = Kind::VRAM_TOTAL; return true; }
     else if (metric=="mem_usage_VRAM"){ out.kind = Kind::VRAM_USED;  return true; }
     else if (metric=="mem_usage_GTT"){ out.kind = Kind::MEM_USAGE_GTT; return true; }
@@ -328,6 +330,7 @@ static bool classify_event(const std::string& ev, MetricDef& out) {
     else if (metric=="ecc_total_uncorrectable"){ out.kind = Kind::ECC_TOTAL; out.arg = 1; return true; }
     else if (metric=="ecc_total_deferred"){ out.kind = Kind::ECC_TOTAL; out.arg = 2; return true; }
     if      (metric=="power_average") { out.kind = Kind::POWER_AVG_W;  return true; }
+    else if (metric=="power_current") { out.kind = Kind::POWER_CUR_W; return true; }
     else if (metric=="power_cap_current" || metric=="power_cap")   { out.kind = Kind::POWER_CAP_CUR; return true; }
     else if (metric=="power_cap_range_min") { out.kind = Kind::POWER_CAP_MIN; return true; }
     else if (metric=="power_cap_range_max") { out.kind = Kind::POWER_CAP_MAX; return true; }
@@ -458,11 +461,13 @@ static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, s
             case Kind::GFX_ACTIVITY:
             case Kind::UMC_ACTIVITY:
             case Kind::MM_ACTIVITY: { amdsmi_engine_usage_t u{}; (void)amdsmi_get_gpu_activity(h, &u); } break;
+            case Kind::UTIL_COUNTER_GFX: { amdsmi_utilization_counter_t cnt{}; cnt.type = (amdsmi_utilization_counter_type_t)m.arg; uint64_t ts=0; (void)amdsmi_get_utilization_count(h, &cnt, 1, &ts); } break;
             case Kind::VRAM_TOTAL:  { uint64_t x=0; (void)amdsmi_get_gpu_memory_total(h, AMDSMI_MEM_TYPE_VRAM, &x); } break;
             case Kind::VRAM_USED:   { uint64_t x=0; (void)amdsmi_get_gpu_memory_usage(h, AMDSMI_MEM_TYPE_VRAM, &x); } break;
             case Kind::MEM_USAGE_GTT: { uint64_t x=0; (void)amdsmi_get_gpu_memory_usage(h, AMDSMI_MEM_TYPE_GTT, &x); } break;
             case Kind::ECC_TOTAL: { amdsmi_error_count_t ec{}; (void)amdsmi_get_gpu_total_ecc_count(h, &ec); } break;
             case Kind::POWER_AVG_W: { amdsmi_power_info_t p{}; (void)amdsmi_get_power_info(h, &p); } break;
+            case Kind::POWER_CUR_W: { amdsmi_power_info_t p{}; (void)amdsmi_get_power_info(h, &p); } break;
             case Kind::POWER_CAP_CUR:
             case Kind::POWER_CAP_MIN:
             case Kind::POWER_CAP_MAX: { amdsmi_power_cap_info_t pc{}; (void)amdsmi_get_power_cap_info(h, 0, &pc); } break;
@@ -502,6 +507,18 @@ static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, s
             case Kind::MM_ACTIVITY: { amdsmi_engine_usage_t u{}; rc = amdsmi_get_gpu_activity(h, &u);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { uint32_t v=(m.kind==Kind::GFX_ACTIVITY)?u.gfx_activity:(m.kind==Kind::UMC_ACTIVITY)?u.umc_activity:u.mm_activity;
                     printf("[VERIFY][AMDSMI] %s = %u %%\n", m.name.c_str(), v); printed = true; } } break;
+            case Kind::UTIL_COUNTER_GFX: {
+                amdsmi_utilization_counter_t cnt{};
+                cnt.type = (amdsmi_utilization_counter_type_t)m.arg;
+                uint64_t ts = 0;
+                rc = amdsmi_get_utilization_count(h, &cnt, 1, &ts);
+                if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) {
+                    printf("[VERIFY][AMDSMI] %s = %llu (ts=%llu)\n", m.name.c_str(),
+                           (unsigned long long)cnt.value,
+                           (unsigned long long)ts);
+                    printed = true;
+                }
+            } break;
             case Kind::VRAM_TOTAL:  { uint64_t x=0; rc = amdsmi_get_gpu_memory_total(h, AMDSMI_MEM_TYPE_VRAM, &x);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = %llu bytes\n", m.name.c_str(), (unsigned long long)x); printed = true; } } break;
             case Kind::VRAM_USED:   { uint64_t x=0; rc = amdsmi_get_gpu_memory_usage(h, AMDSMI_MEM_TYPE_VRAM, &x);
@@ -527,6 +544,8 @@ static Stat time_smi_one_metric(amdsmi_processor_handle h, const MetricDef& m, s
             } break;
             case Kind::POWER_AVG_W: { amdsmi_power_info_t p{}; rc = amdsmi_get_power_info(h, &p);
                 if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = avg %.3f W\n", m.name.c_str(), (double)p.average_socket_power); printed = true; } } break;
+            case Kind::POWER_CUR_W: { amdsmi_power_info_t p{}; rc = amdsmi_get_power_info(h, &p);
+                if (verify && !printed && rc==AMDSMI_STATUS_SUCCESS) { printf("[VERIFY][AMDSMI] %s = cur %.3f W\n", m.name.c_str(), (double)p.current_socket_power); printed = true; } } break;
             case Kind::POWER_CAP_CUR:
             case Kind::POWER_CAP_MIN:
             case Kind::POWER_CAP_MAX: { amdsmi_power_cap_info_t pc{}; rc = amdsmi_get_power_cap_info(h, 0, &pc);
@@ -676,13 +695,17 @@ static std::vector<MetricDef> key_metrics_for_device(int dev, Args::Version ver)
 
     v.push_back({ N("amd_smi:::gfx_activity:device=%d"), Kind::GFX_ACTIVITY, 0 });
     v.push_back({ N("amd_smi:::umc_activity:device=%d"), Kind::UMC_ACTIVITY, 0 });
-    v.push_back({ N("amd_smi:::mm_activity:device=%d"),  Kind::MM_ACTIVITY,  0 });
+    v.push_back({ N("amd_smi:::util_counter_gfx:device=%d"), Kind::UTIL_COUNTER_GFX, (int)AMDSMI_COARSE_GRAIN_GFX_ACTIVITY });
 
     v.push_back({ N("amd_smi:::mem_total_VRAM:device=%d"), Kind::VRAM_TOTAL, 0 });
     v.push_back({ N("amd_smi:::mem_usage_VRAM:device=%d"), Kind::VRAM_USED,  0 });
     v.push_back({ N("amd_smi:::mem_usage_GTT:device=%d"), Kind::MEM_USAGE_GTT, 0 });
 
-    v.push_back({ N("amd_smi:::power_average:device=%d"), Kind::POWER_AVG_W, 0 });
+    if (ver == Args::MI300A) {
+        v.push_back({ N("amd_smi:::power_current:device=%d"), Kind::POWER_CUR_W, 0 });
+    } else {
+        v.push_back({ N("amd_smi:::power_average:device=%d"), Kind::POWER_AVG_W, 0 });
+    }
     v.push_back({ N("amd_smi:::power_cap:device=%d"), Kind::POWER_CAP_CUR, 0 });
 
     v.push_back({ N("amd_smi:::energy_consumed:device=%d"), Kind::ENERGY_CONSUMED, 0 });
@@ -794,7 +817,9 @@ int main(int argc, char** argv) {
                 (m.kind==Kind::VRAM_TOTAL)              ? "amdsmi_get_gpu_memory_total" :
                 (m.kind==Kind::VRAM_USED ||
                  m.kind==Kind::MEM_USAGE_GTT)           ? "amdsmi_get_gpu_memory_usage" :
-                (m.kind==Kind::POWER_AVG_W)             ? "amdsmi_get_power_info" :
+                (m.kind==Kind::UTIL_COUNTER_GFX)        ? "amdsmi_get_utilization_count" :
+                (m.kind==Kind::POWER_AVG_W ||
+                 m.kind==Kind::POWER_CUR_W)             ? "amdsmi_get_power_info" :
                 (m.kind==Kind::POWER_CAP_CUR ||
                  m.kind==Kind::POWER_CAP_MIN ||
                  m.kind==Kind::POWER_CAP_MAX)           ? "amdsmi_get_power_cap_info" :
