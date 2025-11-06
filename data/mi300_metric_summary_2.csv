@@ -1,0 +1,8 @@
+metric,interval_ms,duration_s,samples,mean_us,reads,changes
+"amd_smi:::power_current:device=1",1,100.000,100000,589.325,100000,6753
+"amd_smi:::power_current:device=1",2,100.000,50000,785.265,50000,5854
+"amd_smi:::power_current:device=1",5,100.000,20000,792.632,20000,3644
+"amd_smi:::power_current:device=1",10,100.000,10000,799.708,10000,2360
+"amd_smi:::power_current:device=1",20,100.000,5000,798.922,5000,1474
+"amd_smi:::power_current:device=1",50,100.000,2000,841.121,2000,830
+"amd_smi:::power_current:device=1",100,100.000,1000,854.479,1000,457
