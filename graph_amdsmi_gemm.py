@@ -85,7 +85,7 @@ def main() -> int:
     memory_col = f"amd_smi:::temp_current_sensor=7:device={device}"
     gfx_col = f"amd_smi:::gfx_activity:device={device}"
     umc_col = f"amd_smi:::umc_activity:device={device}"
-    power_col = f"amd_smi:::power_average:device={device}"
+    power_col = f"amd_smi:::power_current:device={device}"
     cu_col = (
         f"amd_smi:::process_cu_occupancy_proc={args.proc}:device={device}"
     )
@@ -119,7 +119,7 @@ def main() -> int:
         4: "VR SOC",
         5: "HBM VR",
         6: "HBM",
-        7: "PXT",
+        7: "PLX",
     }
     sensor_name = sensor_names.get(sensor, f"Sensor {sensor}")
 
@@ -145,7 +145,7 @@ def main() -> int:
         color="tab:brown",
         linewidth=1.5,
         linestyle="-",
-        label="PXT Temperature",
+        label="PLX Temperature",
     )
 
     ax_temp.set_xlabel("Time (s)")
@@ -220,7 +220,7 @@ def main() -> int:
         if ymin == ymax:
             ymax = ymin + 50
         ax_power.set_ylim(ymin, ymax)
-        ax_power.set_yticks(range(int(ymin), int(ymax) + 1, 50))
+        ax_power.set_yticks(range(int(ymin), 800 + 1, 50))
         lines.append(line_power)
         labels.append(line_power.get_label())
 
@@ -255,12 +255,12 @@ def main() -> int:
             ax_cu.set_ylim(0, cu_upper)
             # 228
 # %%
-            ax_cu.set_yticks(range(0, int(110) + 1, 10))
+            ax_cu.set_yticks(range(0, int(230) + 1, 10))
 
             lines.append(line_cu)
             labels.append(line_cu.get_label())
 
-    ax_temp.set_title("AMD-SMI GEMM Monitor - MI210")
+    ax_temp.set_title("Reference GEMM - MI300A")
     t_min = df["time_s"].min()
     t_max = df["time_s"].max()
     ax_temp.set_xlim(t_min, t_max)
